@@ -5,7 +5,8 @@
       "Bash(where java:*)",
       "Bash(gradle:*)",
       "Bash(./gradlew:*)",
-      "Bash(gh:*)"
+      "Bash(gh:*)",
+      "Bash(cd:*)"
     ]
   }
 }
