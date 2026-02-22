@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head:*)",
+      "Bash(where java:*)",
+      "Bash(gradle:*)",
+      "Bash(./gradlew:*)",
+      "Bash(gh:*)"
+    ]
+  }
+}
