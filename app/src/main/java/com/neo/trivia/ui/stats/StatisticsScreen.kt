@@ -19,6 +19,12 @@ import com.neo.trivia.domain.model.Question
 import com.neo.trivia.domain.repository.TriviaRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+// Design system imports
+import com.neo.design.buttons.PrimaryButton
+import com.neo.design.cards.AppCard
+import com.neo.design.cards.StatCard
+import com.neo.design.icons.AppIcon
+import com.neo.design.icons.TriviaIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,7 +40,7 @@ fun StatisticsScreen(
                 title = { Text("Statistics") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.Home, contentDescription = "Back")
+                        AppIcon(TriviaIcons.Home, contentDescription = "Back")
                     }
                 }
             )
@@ -50,21 +56,21 @@ fun StatisticsScreen(
         ) {
             // Statistics Cards
             StatCard(
-                icon = Icons.Default.Info,
+                icon = TriviaIcons.Info,
                 title = "Total Questions",
                 value = "$totalQuestions",
                 color = MaterialTheme.colorScheme.primary
             )
 
             StatCard(
-                icon = Icons.Default.Favorite,
+                icon = TriviaIcons.Favorite,
                 title = "Favorite Questions",
                 value = "$totalQuestions",
                 color = MaterialTheme.colorScheme.error
             )
 
             // Usage Information
-            Card(
+            AppCard(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -94,6 +100,7 @@ fun StatisticsScreen(
     }
 }
 
+// Using design system StatCard component
 @Composable
 fun StatCard(
     icon: ImageVector,
@@ -102,40 +109,13 @@ fun StatCard(
     color: Color,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    com.neo.design.cards.StatCard(
+        icon = icon,
+        title = title,
+        value = value,
+        color = color,
         modifier = modifier
-            .fillMaxWidth()
-            .height(120.dp),
-        colors = CardDefaults.cardColors(containerColor = color.copy(alpha = 0.1f))
-    ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = color,
-                modifier = Modifier.size(48.dp)
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = color
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                text = value,
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = color
-            )
-        }
-    }
+    )
 }
 
 class TriviaRepositoryImplMock : TriviaRepository {

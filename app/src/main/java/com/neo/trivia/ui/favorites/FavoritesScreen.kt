@@ -15,6 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.neo.trivia.domain.model.Question
+// Design system imports
+import com.neo.design.buttons.PrimaryButton
+import com.neo.design.buttons.OutlinedButton
+import com.neo.design.cards.AppCard
+import com.neo.design.icons.AppIcon
+import com.neo.design.icons.TriviaIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,7 +36,7 @@ fun FavoritesScreen(
                 title = { Text("Favorites") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.Default.Home, contentDescription = "Back")
+                        AppIcon(TriviaIcons.Home, contentDescription = "Back")
                     }
                 }
             )
@@ -101,18 +107,15 @@ fun FavoriteQuestionCard(
     onFavoriteToggle: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Card(
+    AppCard(
         modifier = modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp)
+            modifier = Modifier.fillMaxWidth()
         ) {
             Text(
                 text = question.question,
-                style = MaterialTheme.typography.bodyLarge,
-                modifier = Modifier.fillMaxWidth()
+                style = MaterialTheme.typography.bodyLarge
             )
 
             Spacer(modifier = Modifier.height(8.dp))
@@ -128,8 +131,8 @@ fun FavoriteQuestionCard(
             onClick = onFavoriteToggle,
             modifier = Modifier.align(Alignment.End)
         ) {
-            Icon(
-                imageVector = if (isFavorite) Icons.Default.Favorite else Icons.Default.FavoriteBorder,
+            AppIcon(
+                icon = if (isFavorite) TriviaIcons.Favorite else TriviaIcons.FavoriteBorder,
                 contentDescription = "Toggle favorite",
                 tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant
             )

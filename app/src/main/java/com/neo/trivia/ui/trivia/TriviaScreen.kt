@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.neo.design.buttons.LoadingButton
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.ui.AnswerSheetDialog
 import com.neo.trivia.ui.CategoryChip
@@ -99,25 +100,14 @@ fun TriviaScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             // Start Quiz Button
-            Button(
+            LoadingButton(
+                text = "Start Quiz",
                 onClick = {
                     viewModel.loadQuestions(questionCount, selectedCategory)
                 },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(56.dp),
+                modifier = Modifier.fillMaxWidth(),
                 enabled = !isLoading
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(
-                        modifier = Modifier.size(24.dp),
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        strokeWidth = 2.dp
-                    )
-                } else {
-                    Text("Start Quiz")
-                }
-            }
+            )
 
             // Status message
             errorMessage?.let {

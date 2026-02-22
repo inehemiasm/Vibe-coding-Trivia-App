@@ -5,8 +5,22 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.graphics.vector.ImageVector
 import com.neo.trivia.domain.model.Category
+// Design system imports
+import com.neo.design.buttons.PrimaryButton
+import com.neo.design.buttons.LoadingButton
+import com.neo.design.buttons.OutlinedButton
+import com.neo.design.buttons.SecondaryButton
+import com.neo.design.buttons.TertiaryButton
+import com.neo.design.cards.AppCard
+import com.neo.design.cards.StatCard
+import com.neo.design.icons.IconSize
+import com.neo.design.icons.AppIcon
+import com.neo.design.icons.TriviaIcons
+import com.neo.design.typography.Typography
 
+// Refactored components using design system
 @Composable
 fun CustomButton(
     text: String,
@@ -14,14 +28,12 @@ fun CustomButton(
     modifier: Modifier = Modifier,
     enabled: Boolean = true
 ) {
-    Button(
+    PrimaryButton(
+        text = text,
         onClick = onClick,
         modifier = modifier,
-        enabled = enabled,
-        contentPadding = PaddingValues(horizontal = 24.dp, vertical = 12.dp)
-    ) {
-        Text(text)
-    }
+        enabled = enabled
+    )
 }
 
 @Composable
@@ -109,20 +121,18 @@ fun AnswerSheetDialog(
             }
         },
         confirmButton = {
-            Button(
+            PrimaryButton(
+                text = if (currentIndex + 1 == totalQuestions) "Finish" else "Next",
                 onClick = onNextClick,
                 enabled = selectedAnswerIndex != null
-            ) {
-                Text(
-                    text = if (currentIndex + 1 == totalQuestions) "Finish" else "Next"
-                )
-            }
+            )
         },
         dismissButton = {
             if (currentIndex > 0) {
-                Button(onClick = onPreviousClick) {
-                    Text("Previous")
-                }
+                OutlinedButton(
+                    text = "Previous",
+                    onClick = onPreviousClick
+                )
             }
         }
     )

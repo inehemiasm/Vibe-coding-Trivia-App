@@ -32,9 +32,9 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlin {
-        jvmToolchain(17)
-    }
+//    kotlin {
+//        jvmToolchain(17)
+//    }
     buildFeatures {
         compose = true
     }
@@ -84,4 +84,7 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
+
+    // Design System
+    implementation(project(":design"))
 }
