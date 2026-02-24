@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.Replay
+import androidx.compose.material.icons.filled.Star
 
 /**
  * Trivia App icon set with all necessary icons for the application.
@@ -28,7 +29,7 @@ object TriviaIcons {
     val Close = Icons.Default.Close
     val Search = Icons.Default.Search
     val Settings = Icons.Default.Settings
-    val Stats = Icons.Default.Favorite // Using Favorite as placeholder for Stats
+    val Stats = Icons.Default.Star
 
     // Action icons
     val Favorite = Icons.Default.Favorite

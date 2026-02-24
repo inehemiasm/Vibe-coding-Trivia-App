@@ -1,8 +1,8 @@
 package com.neo.trivia.domain.di
 
-import com.neo.trivia.data.di.DataModule
+import com.neo.trivia.data.database.TriviaDatabase
+import com.neo.trivia.data.database.dao.QuizHistoryDao
 import com.neo.trivia.domain.repository.TriviaRepository
-import com.neo.trivia.domain.usecase.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,31 +15,25 @@ object DomainModule {
 
     @Provides
     @Singleton
-    fun provideGetQuestionsUseCase(repository: TriviaRepository): GetQuestionsUseCase {
-        return GetQuestionsUseCase(repository)
+    fun provideGetQuestionsUseCase(repository: TriviaRepository): com.neo.trivia.domain.usecase.GetQuestionsUseCase {
+        return com.neo.trivia.domain.usecase.GetQuestionsUseCase(repository)
     }
 
     @Provides
     @Singleton
-    fun provideGetStatisticsUseCase(repository: TriviaRepository): GetStatisticsUseCase {
-        return GetStatisticsUseCase(repository)
+    fun provideGetFavoriteQuestionsUseCase(repository: TriviaRepository): com.neo.trivia.domain.usecase.GetFavoriteQuestionsUseCase {
+        return com.neo.trivia.domain.usecase.GetFavoriteQuestionsUseCase(repository)
     }
 
     @Provides
     @Singleton
-    fun provideGetFavoriteQuestionsUseCase(repository: TriviaRepository): GetFavoriteQuestionsUseCase {
-        return GetFavoriteQuestionsUseCase(repository)
+    fun provideToggleFavoriteUseCase(repository: TriviaRepository): com.neo.trivia.domain.usecase.ToggleFavoriteUseCase {
+        return com.neo.trivia.domain.usecase.ToggleFavoriteUseCase(repository)
     }
 
     @Provides
     @Singleton
-    fun provideToggleFavoriteUseCase(repository: TriviaRepository): ToggleFavoriteUseCase {
-        return ToggleFavoriteUseCase(repository)
-    }
-
-    @Provides
-    @Singleton
-    fun provideClearHistoryUseCase(repository: TriviaRepository): ClearHistoryUseCase {
-        return ClearHistoryUseCase(repository)
+    fun quizHistoryDao(database: TriviaDatabase): QuizHistoryDao {
+        return database.quizHistoryDao()
     }
 }

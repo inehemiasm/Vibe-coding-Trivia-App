@@ -1,3 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- App Name -->
     <string name="app_name">Trivia App</string>
+
+    <!-- Home Screen -->
+    <string name="home_top_bar_title">Trivia App</string>
+    <string name="home_welcome_title">Welcome Back!</string>
+    <string name="home_welcome_subtitle">Ready to challenge yourself?</string>
+    <string name="home_choose_category">Choose Category</string>
+    <string name="home_your_progress">Your Progress</string>
+    <string name="stat_questions_title">Questions</string>
+    <string name="stat_selected_title">Selected</string>
+    <string name="nav_statistics_title">Statistics</string>
+    <string name="nav_statistics_description">View your progress</string>
+    <string name="nav_settings_title">Settings</string>
+    <string name="nav_settings_description">Configure app</string>
+
+    <!-- Settings Screen -->
+    <string name="settings_top_bar_title">Settings</string>
+    <string name="settings_appearance_title">Appearance</string>
+    <string name="settings_about_title">About</string>
+    <string name="about_app_title">Trivia App</string>
+    <string name="app_version">Version 1.0</string>
+    <string name="app_info_text">Built with Clean Architecture, Jetpack Compose, and Hilt</string>
+    <string name="select_theme">Select Theme</string>
+    <string name="dark_mode_title">Dark Mode</string>
+    <string name="dark_mode_enabled">Currently enabled</string>
+    <string name="dark_mode_disabled">Enable dark theme</string>
+    <string name="enable_dark_mode_dialog_title">Enable Dark Mode</string>
+    <string name="enable_dark_mode_dialog_message">Dark mode will be enabled in the next session.</string>
+    <string name="enable_dark_mode_dialog_positive">Enable</string>
+    <string name="enable_dark_mode_dialog_negative">Cancel</string>
+
+    <!-- Statistics Screen -->
+    <string name="stats_top_bar_title">Statistics</string>
+    <string name="stat_total_questions">Total Questions</string>
+    <string name="stat_favorite_questions">Favorite Questions</string>
+    <string name="stats_info_header">Statistics Information</string>
+    <string name="stats_total_questions_info">Total Questions: %1$d</string>
+    <string name="stats_caching_info">Questions are cached locally for offline access.</string>
+    <string name="stats_history_info">You can clear your history at any time.</string>
+    <string name="nav_back">Back</string>
+
+    <!-- Favorites Screen -->
+    <string name="favorites_top_bar_title">Favorites</string>
+    <string name="favorites_search_label">Search favorites</string>
+    <string name="favorites_empty_state">No favorite questions yet</string>
+    <string name="toggle_favorite_content_description">Toggle favorite</string>
+
+    <!-- Trivia Screen -->
+    <string name="trivia_top_bar_title">Trivia App</string>
+    <string name="trivia_select_category">Select Category</string>
+    <string name="trivia_number_of_questions">Number of Questions</string>
+    <string name="trivia_start_quiz">Start Quiz</string>
+    <string name="trivia_your_questions">Your Questions (%1$d)</string>
+
+    <!-- Quiz Result Screen -->
+    <string name="quiz_results_top_bar_title">Quiz Results</string>
+    <string name="quiz_retake">Retake Quiz</string>
+    <string name="share_results">Share Results</string>
+    <string name="results_summary">Results Summary</string>
+    <string name="question_review">Question Review</string>
+    <string name="correct_answers_header">✓ Correct Answers</string>
+    <string name="incorrect_answers_header">✗ Incorrect Answers</string>
+    <string name="no_quiz_results">No quiz results available</string>
+    <string name="take_a_quiz">Take a Quiz</string>
+    <string name="quiz_completed">Quiz Completed!</string>
+    <string name="correct_percentage">%d%% Correct</string>
+    <string name="stat_total_questions_label">Total Questions</string>
+    <string name="stat_correct_label">Correct</string>
+    <string name="stat_incorrect_label">Incorrect</string>
+
+    <!-- Multiplayer Setup Screen -->
+    <string name="multiplayer_setup_top_bar_title">Multiplayer Setup</string>
+    <string name="multiplayer_trivia">Multiplayer Trivia</string>
+    <string name="your_name">Your Name</string>
+    <string name="select_category">Select Category</string>
+    <string name="number_of_players">Number of Players</string>
+    <string name="start_game">Start Game</string>
+    <string name="cancel">Cancel</string>
+
+    <!-- Quiz Components -->
+    <string name="quiz_question_count">Question %1$d of %2$d</string>
+    <string name="quiz_complete">Quiz Complete!</string>
+    <string name="finish_button">Finish</string>
+    <string name="next_button">Next</string>
+    <string name="previous_button">Previous</string>
+    <string name="your_answer">Your Answer:</string>
+    <string name="not_selected">Not selected</string>
+    <string name="correct_answer">Correct Answer:</string>
+    <string name="correct_content_description">Correct</string>
+
+    <!-- Navigation -->
+    <string name="nav_home">Home</string>
+    <string name="nav_favorites">Favorites</string>
+    <string name="nav_trivia">Trivia</string>
+    <string name="nav_stats">Statistics</string>
+    <string name="nav_settings">Settings</string>
 </resources>

@@ -4,7 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.neo.trivia.domain.model.Question
 import com.neo.trivia.domain.usecase.GetFavoriteQuestionsUseCase
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class FavoritesViewModel(
@@ -34,13 +36,7 @@ class FavoritesViewModel(
 
     fun onFavoriteToggled(question: Question) {
         viewModelScope.launch {
-            _questions.value = _questions.value.map { q ->
-                if (q.id == question.id) {
-                    question.copy(isFavorite = question.isFavorite.not())
-                } else {
-                    q
-                }
-            }
+            _questions.value = _questions.value.filter { it.question != question.question }
         }
     }
 }

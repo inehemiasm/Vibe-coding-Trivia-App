@@ -1,134 +1,73 @@
 package com.neo.trivia.data.repository
 
-import com.neo.trivia.data.api.TriviaApi
-import com.neo.trivia.data.database.dao.FavoriteDao
-import com.neo.trivia.data.database.dao.QuestionDao
-import com.neo.trivia.data.database.entity.FavoriteEntity
-import com.neo.trivia.data.database.entity.QuestionEntity
+import com.neo.trivia.data.local.LocalDataSource
+import com.neo.trivia.data.remote.RemoteDataSource
 import com.neo.trivia.domain.model.Category
+import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.domain.model.Question
 import com.neo.trivia.domain.repository.TriviaRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class TriviaRepositoryImpl @Inject constructor(
-    val api: TriviaApi,
-    val questionDao: QuestionDao,
-    val favoriteDao: FavoriteDao
+    private val remoteDataSource: RemoteDataSource,
+    private val localDataSource: LocalDataSource
 ) : TriviaRepository {
 
-    override suspend fun getQuestions(amount: Int, category: Category?): Result<List<Question>> {
+    override suspend fun getQuestions(
+        amount: Int, 
+        category: Category?,
+        difficulty: Difficulty
+    ): kotlin.Result<List<Question>> {
         return try {
-            val categoryId = category?.id
-            val response = api.getQuestions(amount, categoryId)
-            if (response.isSuccessful && response.body() != null) {
-                val questionModels = response.body()!!.results.mapIndexed { index, apiQuestion ->
-                    Question(
-                        id = "q_${System.currentTimeMillis()}_$index",
-                        question = apiQuestion.question,
-                        correctAnswer = apiQuestion.correctAnswer,
-                        incorrectAnswers = apiQuestion.incorrectAnswers,
-                        category = apiQuestion.category,
-                        type = apiQuestion.type
-                    )
+            when (val remoteResult = remoteDataSource.getQuestionsSync(amount, category, difficulty)) {
+                is com.neo.trivia.data.Result.Success -> {
+                    localDataSource.insertQuestions(remoteResult.data)
+                    kotlin.Result.success(remoteResult.data)
                 }
-
-                val questionEntities = questionModels.map { model ->
-                    QuestionEntity(
-                        id = model.id,
-                        question = model.question,
-                        correctAnswer = model.correctAnswer,
-                        incorrectAnswers = model.incorrectAnswers,
-                        category = model.category,
-                        type = model.type
-                    )
-                }
-                questionDao.insertAll(questionEntities)
-
-                Result.success(questionModels)
-            } else {
-                Result.failure(Exception("Failed to fetch questions"))
+                is com.neo.trivia.data.Result.Failure -> kotlin.Result.failure(remoteResult.error)
+                is com.neo.trivia.data.Result.Loading -> kotlin.Result.failure(IllegalStateException("getQuestionsSync should not be in a loading state"))
             }
         } catch (e: Exception) {
-            Result.failure(e)
+            kotlin.Result.failure(e)
+        }
+    }
+
+    override suspend fun getCategories(): kotlin.Result<List<Category>> {
+        return try {
+            when (val result = remoteDataSource.getCategories()) {
+                is com.neo.trivia.data.Result.Success -> kotlin.Result.success(result.data)
+                is com.neo.trivia.data.Result.Failure -> kotlin.Result.failure(result.error)
+                is com.neo.trivia.data.Result.Loading -> kotlin.Result.failure(IllegalStateException("getCategories should not be in a loading state"))
+            }
+        } catch (e: Exception) {
+            kotlin.Result.failure(e)
         }
     }
 
     override fun getQuestionsFromCache(): Flow<List<Question>> {
-        return questionDao.getAllQuestions().map { entities ->
-            entities.map { entity ->
-                Question(
-                    id = entity.id,
-                    question = entity.question,
-                    correctAnswer = entity.correctAnswer,
-                    incorrectAnswers = entity.incorrectAnswers,
-                    category = entity.category,
-                    type = entity.type
-                )
-            }
-        }
+        return localDataSource.getAllQuestions()
     }
 
     override fun searchQuestions(query: String): Flow<List<Question>> {
-        return questionDao.searchQuestions(query).map { entities ->
-            entities.map { entity ->
-                Question(
-                    id = entity.id,
-                    question = entity.question,
-                    correctAnswer = entity.correctAnswer,
-                    incorrectAnswers = entity.incorrectAnswers,
-                    category = entity.category,
-                    type = entity.type
-                )
-            }
-        }
+        return localDataSource.searchQuestions(query)
     }
 
     override suspend fun clearCache() {
-        questionDao.clearAll()
+        localDataSource.clearCache()
     }
 
     override suspend fun toggleFavorite(question: Question): Boolean {
-        val isFavorite = favoriteDao.isFavorite(question.id)
-        return if (isFavorite) {
-            favoriteDao.removeFavorite(question.id)
-            false
-        } else {
-            favoriteDao.insert(FavoriteEntity(questionId = question.id))
-            true
-        }
+        return localDataSource.toggleFavorite(question.question)
     }
 
     override fun getFavoriteQuestions(): Flow<List<Question>> {
-        return favoriteDao.getFavoriteQuestions().map { entities ->
-            entities.map { entity ->
-                Question(
-                    id = entity.id,
-                    question = entity.question,
-                    correctAnswer = entity.correctAnswer,
-                    incorrectAnswers = entity.incorrectAnswers,
-                    category = entity.category,
-                    type = entity.type
-                )
-            }
-        }
+        return localDataSource.getFavoriteQuestions()
     }
 
     override fun getAllQuestions(): Flow<List<Question>> {
-        return questionDao.getAllQuestions().map { entities ->
-            entities.map { entity ->
-                Question(
-                    id = entity.id,
-                    question = entity.question,
-                    correctAnswer = entity.correctAnswer,
-                    incorrectAnswers = entity.incorrectAnswers,
-                    category = entity.category,
-                    type = entity.type
-                )
-            }
-        }
+        return localDataSource.getAllQuestions()
     }
 }

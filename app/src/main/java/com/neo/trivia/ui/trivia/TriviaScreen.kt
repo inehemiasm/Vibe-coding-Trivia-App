@@ -1,6 +1,8 @@
 package com.neo.trivia.ui.trivia
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -8,166 +10,136 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.neo.design.buttons.LoadingButton
+import androidx.navigation.NavController
+import com.neo.design.cards.CategoryCard
 import com.neo.trivia.domain.model.Category
-import com.neo.trivia.ui.AnswerSheetDialog
-import com.neo.trivia.ui.CategoryChip
+import com.neo.trivia.domain.model.Difficulty
+import com.neo.trivia.ui.QuestionScreen
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TriviaScreen(
-    viewModel: TriviaViewModel = hiltViewModel(),
-    onQuestionClick: (List<String>, Int) -> Unit = { _, _ -> },
-    initialCategory: Category? = null
+    navController: NavController,
+    viewModel: CategoryViewModel = hiltViewModel()
 ) {
-    val selectedCategory by viewModel.selectedCategory.collectAsStateWithLifecycle()
-    val questionCount by viewModel.questionCount.collectAsStateWithLifecycle()
-    val isLoading by viewModel.isLoading.collectAsStateWithLifecycle()
-    val errorMessage by viewModel.errorMessage.collectAsStateWithLifecycle()
-    val currentQuestions by viewModel.currentQuestions.collectAsStateWithLifecycle()
-    val selectedQuestionIndex by viewModel.selectedQuestionIndex.collectAsStateWithLifecycle()
-    val selectedAnswers by viewModel.selectedAnswers.collectAsStateWithLifecycle()
-
-    // Auto-load questions when category or question count changes
-    LaunchedEffect(selectedCategory, questionCount) {
-        selectedCategory?.let { category ->
-            viewModel.loadQuestions(questionCount, category)
-        }
+    LaunchedEffect(Unit) {
+        viewModel.loadCategories()
     }
+    val categoriesState by viewModel.categoriesState.collectAsStateWithLifecycle()
+    var selectedCategory by remember { mutableStateOf<Category?>(null) }
+    var selectedDifficulty by remember { mutableStateOf<Difficulty?>(null) }
+    val difficulties = Difficulty.entries
 
-    // Auto-select category if provided
-    LaunchedEffect(initialCategory) {
-        if (initialCategory != null && selectedCategory != initialCategory) {
-            viewModel.selectCategory(initialCategory)
-        }
-    }
-
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Trivia App") }
-            )
-        }
-    ) { paddingValues ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp)
-                .verticalScroll(rememberScrollState()),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            Text(
-                text = "Select Category",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            Category.entries.forEach { category ->
-                CategoryChip(
-                    category = category,
-                    selected = selectedCategory == category,
-                    onClick = {
-                        viewModel.selectCategory(category)
-                    }
-                )
+    when (val state = categoriesState) {
+        is CategoriesScreenState.Loading -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator()
             }
+        }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = "Number of Questions",
-                style = MaterialTheme.typography.titleMedium,
-                modifier = Modifier.padding(bottom = 8.dp)
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxWidth()
+        is CategoriesScreenState.Success -> {
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
             ) {
-                repeat(5) { index ->
-                    val count = (index + 1) * 10
-                    com.neo.trivia.ui.FilterButton(
-                        text = "$count",
-                        selected = questionCount == count,
-                        onClick = {
-                            viewModel.setQuestionCount(count)
-                        }
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            LoadingButton(
-                text = "Start Quiz",
-                onClick = {
-                    viewModel.loadQuestions(questionCount, selectedCategory)
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading
-            )
-
-            errorMessage?.let {
+                Text("Categories", style = MaterialTheme.typography.headlineSmall)
                 Spacer(modifier = Modifier.height(16.dp))
-                Text(
-                    text = it,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+                LazyVerticalGrid(
+                    columns = GridCells.Fixed(2),
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(state.categories) { category ->
+                        CategoryCard(
+                            categoryName = category.name,
+                            onCategoryClick = { selectedCategory = category },
+                            border = if (selectedCategory == category) {
+                                BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                            } else {
+                                null
+                            }
+                        )
+                    }
+                }
 
-            currentQuestions?.let { questions ->
-                if (questions.isNotEmpty()) {
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Text(
-                        text = "Your Questions (${questions.size})",
-                        style = MaterialTheme.typography.titleMedium
-                    )
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Text("Difficulty", style = MaterialTheme.typography.headlineSmall)
+                Spacer(modifier = Modifier.height(16.dp))
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceEvenly
+                ) {
+                    difficulties.forEach { difficulty ->
+                        Button(
+                            onClick = { selectedDifficulty = difficulty },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (selectedDifficulty == difficulty) {
+                                    MaterialTheme.colorScheme.primary
+                                } else {
+                                    MaterialTheme.colorScheme.surface
+                                }
+                            )
+                        ) {
+                            Text(
+                                text = difficulty.name,
+                                color = if (selectedDifficulty == difficulty) {
+                                    MaterialTheme.colorScheme.onPrimary
+                                } else {
+                                    MaterialTheme.colorScheme.onSurface
+                                }
+                            )
+                        }
+                    }
+                }
+
+
+                Spacer(modifier = Modifier.height(32.dp))
+
+                Button(
+                    onClick = {
+                        selectedCategory?.let { category ->
+                            selectedDifficulty?.let { difficulty ->
+                                navController.navigate(
+                                    QuestionScreen(
+                                        categoryId = category.id,
+                                        difficulty = difficulty.name
+                                    )
+                                )
+                            }
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = selectedCategory != null && selectedDifficulty != null
+                ) {
+                    Text("Start Quiz")
                 }
             }
         }
-    }
 
-    selectedQuestionIndex?.let { index ->
-        if (index >= 0 && index < (currentQuestions?.size ?: 0)) {
-            val question = currentQuestions!![index]
-            val selectedAnswerIndex = selectedAnswers?.get(index)
-
-            AnswerSheetDialog(
-                question = question,
-                selectedAnswerIndex = selectedAnswerIndex,
-                currentIndex = index,
-                totalQuestions = viewModel.totalQuestions,
-                onAnswerSelected = { answer ->
-                    viewModel.selectAnswer(index, answer)
-                },
-                onNextClick = {
-                    viewModel.nextQuestion()
-                },
-                onPreviousClick = {
-                    viewModel.previousQuestion()
-                },
-                onBackToTrivia = {
-                    viewModel.resetQuestionIndex()
-                }
-            )
+        is CategoriesScreenState.Error -> {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text(state.message)
+            }
         }
     }
 }

@@ -6,33 +6,27 @@ import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.domain.model.Question
 import com.neo.trivia.domain.model.QuizResult
-import com.neo.trivia.domain.usecase.GetCategoriesUseCase
 import com.neo.trivia.domain.usecase.GetQuestionsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
-class TriviaViewModel @Inject constructor(
-    private val getQuestionsUseCase: GetQuestionsUseCase,
-    private val getCategoriesUseCase: GetCategoriesUseCase
+class QuestionViewModel @Inject constructor(
+    private val getQuestionsUseCase: GetQuestionsUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<TriviaUiState>(TriviaUiState.Initial)
     val uiState: StateFlow<TriviaUiState> = _uiState.asStateFlow()
 
-    private val _categoriesState = MutableStateFlow<CategoriesScreenState>(CategoriesScreenState.Loading)
-    val categoriesState: StateFlow<CategoriesScreenState> = _categoriesState.asStateFlow()
-
-    private val _quizQuestions = MutableStateFlow<List<Question>>(emptyList())
-    val quizQuestions: StateFlow<List<Question>> = _quizQuestions.asStateFlow()
+    private val _questions = MutableStateFlow<List<Question>>(emptyList())
+    val currentQuestions: StateFlow<List<Question>> = _questions.asStateFlow()
 
     private val _currentQuestionIndex = MutableStateFlow(0)
-    val selectedQuestionIndex: StateFlow<Int> = _currentQuestionIndex.asStateFlow()
+    val currentQuestionIndex: StateFlow<Int> = _currentQuestionIndex.asStateFlow()
 
     private val _score = MutableStateFlow(0)
     val score: StateFlow<Int> = _score.asStateFlow()
@@ -40,35 +34,13 @@ class TriviaViewModel @Inject constructor(
     private val _quizResults = MutableStateFlow<List<QuizResult>>(emptyList())
     val quizResults: StateFlow<List<QuizResult>> = _quizResults.asStateFlow()
 
-    private var category: Category? = null
-
-    init {
-        loadCategories()
-    }
-
-    private fun loadCategories() {
-        viewModelScope.launch {
-            _categoriesState.value = CategoriesScreenState.Loading
-            try {
-                val categories = getCategoriesUseCase().getOrThrow()
-                _categoriesState.value = CategoriesScreenState.Success(categories)
-            } catch (e: Exception) {
-                _categoriesState.value = CategoriesScreenState.Error(e.message ?: "Failed to load categories")
-            }
-        }
-    }
-
-    fun setCategory(category: Category) {
-        this.category = category
-    }
-
-    fun getQuestions(amount: Int, difficulty: Difficulty) {
+    fun getQuestions(amount: Int, category: Category?, difficulty: Difficulty) {
         viewModelScope.launch {
             _uiState.value = TriviaUiState.Loading
             try {
                 val questions = getQuestionsUseCase(amount, category, difficulty).getOrThrow()
-                Timber.d("Questions: $questions")
-                _quizQuestions.value = questions
+                _questions.value = questions
+                _uiState.value = TriviaUiState.Success(questions)
             } catch (e: Exception) {
                 _uiState.value = TriviaUiState.Error(e.message ?: "An error occurred")
             }
@@ -76,7 +48,7 @@ class TriviaViewModel @Inject constructor(
     }
 
     fun onAnswerSelected(answerIndex: Int) {
-        val currentQuestion = _quizQuestions.value[_currentQuestionIndex.value]
+        val currentQuestion = _questions.value[_currentQuestionIndex.value]
         val isCorrect = currentQuestion.correctAnswer == currentQuestion.answers[answerIndex]
 
         val result = QuizResult(
@@ -92,7 +64,7 @@ class TriviaViewModel @Inject constructor(
             _score.value++
         }
 
-        if (_currentQuestionIndex.value < _quizQuestions.value.size - 1) {
+        if (_currentQuestionIndex.value < _questions.value.size - 1) {
             _currentQuestionIndex.value++
         } else {
             _uiState.value = TriviaUiState.Finished
@@ -101,9 +73,17 @@ class TriviaViewModel @Inject constructor(
 
     fun resetQuiz() {
         _uiState.value = TriviaUiState.Initial
-        _quizQuestions.value = emptyList()
+        _questions.value = emptyList()
         _currentQuestionIndex.value = 0
         _score.value = 0
         _quizResults.value = emptyList()
     }
+}
+
+sealed class TriviaUiState {
+    object Initial : TriviaUiState()
+    object Loading : TriviaUiState()
+    data class Success(val questions: List<Question>) : TriviaUiState()
+    data class Error(val message: String) : TriviaUiState()
+    object Finished : TriviaUiState()
 }

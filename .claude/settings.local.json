@@ -6,7 +6,10 @@
       "Bash(gradle:*)",
       "Bash(./gradlew:*)",
       "Bash(gh:*)",
-      "Bash(cd:*)"
+      "Bash(cd:*)",
+      "Bash(cd C:\\\\Users\\\\nehem\\\\AndroidStudioProjects\\\\TriviaApp:*)",
+      "Bash(test:*)",
+      "Bash(grep:*)"
     ]
   }
 }

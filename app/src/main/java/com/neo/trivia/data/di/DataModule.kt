@@ -5,6 +5,10 @@ import com.neo.trivia.data.api.TriviaApi
 import com.neo.trivia.data.database.TriviaDatabase
 import com.neo.trivia.data.database.dao.FavoriteDao
 import com.neo.trivia.data.database.dao.QuestionDao
+import com.neo.trivia.data.local.LocalDataSource
+import com.neo.trivia.data.local.LocalDataSourceImpl
+import com.neo.trivia.data.remote.RemoteDataSource
+import com.neo.trivia.data.remote.RemoteDataSourceImpl
 import com.neo.trivia.data.repository.TriviaRepositoryImpl
 import com.neo.trivia.domain.repository.TriviaRepository
 import dagger.Binds
@@ -59,6 +63,20 @@ abstract class DataModule {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build()
                 .create(TriviaApi::class.java)
+        }
+
+        @Provides
+        @Singleton
+        fun provideRemoteDataSource(api: TriviaApi): RemoteDataSource {
+            return RemoteDataSourceImpl(api)
+        }
+
+        @Provides
+        @Singleton
+        fun provideLocalDataSource(
+            database: TriviaDatabase
+        ): LocalDataSource {
+            return LocalDataSourceImpl(database.questionDao(), database.favoriteDao())
         }
     }
 }
