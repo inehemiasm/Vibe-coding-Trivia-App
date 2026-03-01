@@ -136,4 +136,21 @@ class LocalDataSourceImpl @Inject constructor(
             entity?.let { entityToQuizResult(it) }
         }
     }
+
+    override suspend fun saveQuizResult(
+        category: Category,
+        score: Int,
+        totalQuestions: Int,
+        questions: List<Question>,
+        quizResults: List<QuizResult>,
+    ) {
+        val quizResultEntity = QuizResultEntity.from(
+            category,
+            score,
+            totalQuestions,
+            questions,
+            quizResults
+        )
+        quizResultDao.insert(quizResultEntity)
+    }
 }

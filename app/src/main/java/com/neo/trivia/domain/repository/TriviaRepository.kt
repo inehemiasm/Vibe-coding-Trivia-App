@@ -3,6 +3,7 @@ package com.neo.trivia.domain.repository
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.domain.model.Question
+import com.neo.trivia.domain.model.QuizResult
 import kotlinx.coroutines.flow.Flow
 
 interface TriviaRepository {
@@ -18,4 +19,14 @@ interface TriviaRepository {
     suspend fun toggleFavorite(question: Question): Boolean
     fun getFavoriteQuestions(): Flow<List<Question>>
     fun getAllQuestions(): Flow<List<Question>>
+
+    suspend fun save(
+        category: Category,
+        score: Int,
+        totalQuestions: Int,
+        questions: List<com.neo.trivia.domain.model.Question>,
+        quizResults: List<QuizResult>
+    )
+
+    fun getQuizResults(): Flow<List<QuizResult>>
 }

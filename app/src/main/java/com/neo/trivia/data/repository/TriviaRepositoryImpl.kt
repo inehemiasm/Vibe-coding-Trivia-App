@@ -5,6 +5,7 @@ import com.neo.trivia.data.remote.RemoteDataSource
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.domain.model.Question
+import com.neo.trivia.domain.model.QuizResult
 import com.neo.trivia.domain.repository.TriviaRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -69,5 +70,25 @@ class TriviaRepositoryImpl @Inject constructor(
 
     override fun getAllQuestions(): Flow<List<Question>> {
         return localDataSource.getAllQuestions()
+    }
+
+    override suspend fun save(
+        category: Category,
+        score: Int,
+        totalQuestions: Int,
+        questions: List<Question>,
+        quizResults: List<QuizResult>
+    ) {
+        localDataSource.saveQuizResult(
+            category = category,
+            score = score,
+            totalQuestions = totalQuestions,
+            questions = questions,
+            quizResults = quizResults
+        )
+    }
+
+    override fun getQuizResults(): Flow<List<QuizResult>> {
+        return localDataSource.getQuizResults()
     }
 }
