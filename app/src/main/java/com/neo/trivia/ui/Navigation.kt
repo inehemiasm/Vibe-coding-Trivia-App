@@ -36,8 +36,11 @@ import com.neo.trivia.ui.trivia.CategoriesScreenState
 import com.neo.trivia.ui.trivia.CategoryViewModel
 import com.neo.trivia.ui.trivia.QuestionScreen
 import com.neo.trivia.ui.trivia.QuestionViewModel
+import com.neo.trivia.ui.trivia.QuizResultViewModel
 import com.neo.trivia.ui.trivia.TriviaScreen
-import com.neo.trivia.ui.trivia.TriviaViewModel
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import com.neo.trivia.ui.QuizResultScreen
 import kotlinx.serialization.Serializable
 import timber.log.Timber
 
@@ -151,18 +154,20 @@ fun NavigationApp(
                             viewModel = questionViewModel,
                             navController = navController,
                             difficulty = Difficulty.valueOf(questionScreen.difficulty),
-                            category = category
+                            category = category,
+                            onQuizFinished = { _, _ ->
+                                // Results are saved automatically by QuizResultViewModel
+                                navController.navigate(QuizResultScreen)
+                            }
                         )
                     }
                 }
 
                 composable<QuizResultScreen> { backStackEntry ->
-                    val triviaGraphBackStackEntry = remember(backStackEntry) {
-                        navController.getBackStackEntry(Screen.Home)
-                    }
-                    val viewModel: TriviaViewModel = hiltViewModel(triviaGraphBackStackEntry)
+                    val quizResultViewModel: QuizResultViewModel = hiltViewModel()
+
                     QuizResultScreen(
-                        viewModel = viewModel,
+                        viewModel = quizResultViewModel,
                         navController = navController
                     )
                 }

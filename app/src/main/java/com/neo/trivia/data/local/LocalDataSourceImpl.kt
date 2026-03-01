@@ -2,9 +2,13 @@ package com.neo.trivia.data.local
 
 import com.neo.trivia.data.database.dao.FavoriteDao
 import com.neo.trivia.data.database.dao.QuestionDao
+import com.neo.trivia.data.database.dao.QuizResultDao
 import com.neo.trivia.data.database.entity.FavoriteEntity
 import com.neo.trivia.data.database.entity.QuestionEntity
+import com.neo.trivia.data.database.entity.QuizResultEntity
+import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Question
+import com.neo.trivia.domain.model.QuizResult
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
@@ -23,7 +27,8 @@ import javax.inject.Singleton
 @Singleton
 class LocalDataSourceImpl @Inject constructor(
     private val questionDao: QuestionDao,
-    private val favoriteDao: FavoriteDao
+    private val favoriteDao: FavoriteDao,
+    private val quizResultDao: QuizResultDao
 ) : LocalDataSource {
 
     /**
@@ -102,5 +107,33 @@ class LocalDataSourceImpl @Inject constructor(
 
     override suspend fun insertFavorite(questionId: String) {
         favoriteDao.insert(FavoriteEntity(questionId = questionId))
+    }
+
+    /**
+     * Converts Room QuizResultEntity objects to domain QuizResult objects.
+     * Note: Question and QuizResult objects are stored as JSON strings due to Room limitations.
+     * For now, we'll just extract the basic question structure.
+     */
+    private fun entityToQuizResult(entity: QuizResultEntity): QuizResult {
+        val questions = com.google.gson.Gson().fromJson(entity.questionsJson, Array<Question>::class.java)
+        val defaultCategoryName = "General Knowledge"
+        return QuizResult(
+            question = questions.firstOrNull() ?: Question("", "", emptyList(), defaultCategoryName, defaultCategoryName, "multiple"),
+            selectedAnswerIndex = -1, // Cannot retrieve from JSON
+            correctAnswerIndex = -1,  // Cannot retrieve from JSON
+            isCorrect = true           // Cannot retrieve from JSON
+        )
+    }
+
+    override fun getQuizResults(): Flow<List<com.neo.trivia.domain.model.QuizResult>> {
+        return quizResultDao.getRecentResults().map { entities ->
+            entities.map { entityToQuizResult(it) }
+        }
+    }
+
+    override fun getLatestQuizResult(): Flow<com.neo.trivia.domain.model.QuizResult?> {
+        return quizResultDao.getLatestResult().map { entity ->
+            entity?.let { entityToQuizResult(it) }
+        }
     }
 }

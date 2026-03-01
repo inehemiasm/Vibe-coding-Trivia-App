@@ -28,20 +28,23 @@ The app follows Clean Architecture principles with three main layers:
 - MVVM pattern
 
 ### 2. Domain Layer (Business Logic)
-- Domain models (Question, Category)
-- Use cases (GetQuestions, ToggleFavorite, etc.)
+- Domain models (Question, Category, QuizResult)
+- Use cases (GetQuestions, ToggleFavorite, SaveQuizResult, etc.)
 - Repository interface
 
 ### 3. Data Layer (Infrastructure)
-- **Local Data Source**: Room database for caching questions and favorites
-  - `QuestionEntity` and `FavoriteEntity` for storing questions and favorites
-  - `QuizHistoryEntity` for tracking quiz history and statistics
-  - DAOs for data access operations
+- **Local Data Source**: Room database for caching questions, favorites, and quiz results
+  - `QuestionEntity` for storing trivia questions
+  - `FavoriteEntity` for storing favorite question IDs
+  - `QuizResultEntity` for storing quiz results with individual answer breakdowns
+  - `QuestionDao`, `FavoriteDao`, `QuizResultDao` for data access operations
+  - `LocalDataSource` interface and implementation for high-level operations
 - **Remote Data Source**: Retrofit API service for fetching questions from Open Trivia DB
   - `RemoteDataSource` and `IRemoteDataSource` interfaces
   - `TriviaApi` for API communication
 - **Repository Implementation**: Orchestrates between local and remote data sources
 - **Result Wrapper**: `Result` sealed class for handling API and database operations
+- **Use Cases**: Business logic layer (SaveQuizResultUseCase, etc.)
 - Hilt DI modules for providing dependencies
 
 ## Dependencies
@@ -94,12 +97,12 @@ TriviaApp/
 │   │   │   │   ├── entity/             # Room entities
 │   │   │   │   │   ├── QuestionEntity.kt
 │   │   │   │   │   ├── FavoriteEntity.kt
-│   │   │   │   │   └── QuizHistoryEntity.kt
+│   │   │   │   │   └── QuizResultEntity.kt
 │   │   │   │   ├── dao/                # Data Access Objects
 │   │   │   │   │   ├── QuestionDao.kt
 │   │   │   │   │   ├── FavoriteDao.kt
-│   │   │   │   │   └── QuizHistoryDao.kt
-│   │   │   │   └── TriviaDatabase.kt   # Room database singleton
+│   │   │   │   │   └── QuizResultDao.kt
+│   │   │   │   └── TriviaDatabase.kt   # Room database singleton (version 4)
 │   │   │   ├── local/                  # Local data source implementation
 │   │   │   │   ├── LocalDataSource.kt           # Interface
 │   │   │   │   └── LocalDataSourceImpl.kt       # Implementation
@@ -109,8 +112,12 @@ TriviaApp/
 │   │   │   ├── Result.kt               # Result wrapper for error handling
 │   │   │   ├── repository/             # Repository implementation
 │   │   │   │   └── TriviaRepositoryImpl.kt
-│   │   │   └── di/                     # Data layer DI module
-│   │   │       └── DataModule.kt
+│   │   │   ├── di/                     # Data layer DI modules
+│   │   │   │   ├── DataModule.kt
+│   │   │   │   ├── DatabaseModule.kt
+│   │   │   │   └── TriviaRepositoryModule.kt
+│   │   │   └── model/                  # Data models
+│   │   │       └── QuestionModel.kt
 │   │   ├── domain/
 │   │   │   ├── di/                     # Domain layer DI module
 │   │   │   │   └── DomainModule.kt
@@ -124,7 +131,8 @@ TriviaApp/
 │   │   │   └── usecase/                # Business logic use cases
 │   │   │       ├── GetCategoriesUseCase.kt
 │   │   │       ├── GetQuestionsUseCase.kt
-│   │   │       ├── SaveQuizHistoryUseCase.kt
+│   │   │       ├── SaveQuizResultUseCase.kt
+│   │   │       ├── ToggleFavoriteUseCase.kt
 │   │   │       └── ...
 │   │   ├── ui/
 │   │   │   ├── Navigation.kt           # NavHost setup
@@ -134,7 +142,7 @@ TriviaApp/
 │   │   │   │   ├── QuizResultScreen.kt # Results display
 │   │   │   │   ├── TriviaViewModel.kt
 │   │   │   │   ├── QuestionViewModel.kt
-│   │   │   │   └── CategoryViewModel.kt
+│   │   │   │   └── QuizResultViewModel.kt
 │   │   │   ├── favorites/              # Favorites screen
 │   │   │   │   ├── FavoritesScreen.kt
 │   │   │   │   └── FavoritesViewModel.kt
@@ -150,6 +158,9 @@ TriviaApp/
 │   └── ...
 ├── design/
 │   ├── src/main/java/com/neo/design/
+│   │   ├── buttons/                    # Design system buttons
+│   │   │   ├── Button.kt
+│   │   │   └── LoadingButton.kt
 │   │   ├── cards/                      # Design system cards
 │   │   │   └── CategoryCard.kt
 │   │   └── icons/                      # Design system icons
@@ -186,18 +197,29 @@ The app uses Open Trivia DB API:
 
 ### Database
 
-The app uses Room database for caching questions and tracking quiz history locally with the following tables:
+The app uses Room database for caching questions, favorites, and quiz results locally with the following tables:
+
 - `questions`: Stores trivia questions
+  - `id`: Unique question identifier
+  - `question`: Question text
+  - `correctAnswer`: Correct answer text
+  - `incorrectAnswers`: List of incorrect answers
+  - `category`: Category ID
+  - `type`: Question type (multiple choice, etc.)
+  - `difficulty`: Difficulty level
+
 - `favorites`: Stores favorite question IDs
-- `quiz_history`: Stores quiz results for statistics tracking
+  - `questionId`: Reference to question in `questions` table
+
+- `quiz_results`: Stores quiz results with detailed breakdown
+  - `id`: Unique result identifier
+  - `timestamp`: Quiz completion timestamp (used for ordering)
+  - `categoryName`: Category name
+  - `categoryIcon`: Category icon
   - `score`: Total correct answers
   - `totalQuestions`: Total questions answered
-  - `percentage`: Success percentage
-  - `correctAnswers`: Number of correct answers
-  - `incorrectAnswers`: Number of incorrect answers
-  - `categoryName`: Category name for the quiz
-  - `category`: Category ID
-  - `timestamp`: Quiz completion timestamp
+  - `questionsJson`: JSON array of all questions (for review)
+  - `quizResultsJson`: JSON array of individual answer results
 
 ## Usage
 
@@ -207,9 +229,17 @@ The app uses Room database for caching questions and tracking quiz history local
    - Final score and percentage
    - Question-by-question breakdown
    - Correct vs incorrect answers
-4. **Favorites**: Save questions to favorites from the trivia screen
-5. **Statistics**: View your quiz history and performance stats
-6. **Settings**: Customize app settings (theme, etc.)
+   - Category information
+4. **Quiz History**: View all previous quiz results with detailed reviews
+5. **Favorites**: Save questions to favorites from the trivia screen
+6. **Statistics**: View your quiz history and performance stats
+7. **Settings**: Customize app settings (theme, etc.)
+
+**Quiz Result Features:**
+- Results are automatically saved after each quiz completion
+- Up to 10 recent results are retained in local database
+- Results include full question review with original answers
+- History persists across app sessions
 
 ## Development
 
@@ -235,8 +265,9 @@ The app uses Room database for caching questions and tracking quiz history local
 
 1. Create entity in `data/database/entity/`
 2. Create DAO in `data/database/dao/`
-3. Update `TriviaDatabase.kt` to include the DAO
+3. Update `TriviaDatabase.kt` to include the DAO and update version number
 4. Create use case if needed for business logic
+5. Add method to `LocalDataSource` interface and implementation if needed
 
 ## Testing
 
@@ -282,6 +313,7 @@ This project is for educational purposes.
 - Hilt
 - Room
 - Retrofit
+- Architecture documentation in `ARCHITECTURE.md`
 
 ## Design System
 

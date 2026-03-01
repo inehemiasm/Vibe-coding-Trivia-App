@@ -1,6 +1,7 @@
 package com.neo.trivia.data.local
 
 import com.neo.trivia.domain.model.Question
+import com.neo.trivia.domain.model.QuizResult
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -65,4 +66,16 @@ interface LocalDataSource {
      * @param questionId Question ID to add
      */
     suspend fun insertFavorite(questionId: String)
+
+    /**
+     * Retrieves all recent quiz results.
+     * @return Flow of domain QuizResult objects
+     */
+    fun getQuizResults(): Flow<List<QuizResult>>
+
+    /**
+     * Retrieves the most recent quiz result.
+     * @return Flow of the latest domain QuizResult object or null
+     */
+    fun getLatestQuizResult(): Flow<QuizResult?>
 }

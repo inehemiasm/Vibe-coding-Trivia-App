@@ -30,9 +30,11 @@ import androidx.navigation.NavController
 import com.neo.trivia.R
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
+import com.neo.trivia.domain.model.Question
 import com.neo.trivia.ui.Components
 import com.neo.trivia.ui.QuizResultScreen
 import kotlinx.coroutines.flow.collectLatest
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -40,16 +42,22 @@ fun QuestionScreen(
     viewModel: QuestionViewModel = hiltViewModel(),
     navController: NavController,
     category: Category,
-    difficulty: Difficulty
+    difficulty: Difficulty,
+    onQuizFinished: (List<Question>, Int) -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(Unit) {
+    // Load questions when entering the screen
+    LaunchedEffect(category, difficulty) {
         viewModel.getQuestions(10, category, difficulty)
-        viewModel.uiState.collectLatest { state ->
-            if (state is TriviaUiState.Finished) {
-                navController.navigate(QuizResultScreen)
-            }
+    }
+
+    // Navigate to results when quiz is finished
+    LaunchedEffect(uiState) {
+        if (uiState is TriviaUiState.Finished) {
+            val questions = viewModel.currentQuestions.value
+            val score = viewModel.score.value
+            onQuizFinished(questions, score)
         }
     }
 
@@ -68,6 +76,8 @@ fun QuestionScreen(
             )
         }
     ) { paddingValues ->
+        Timber.d("Testing1: State: $uiState")
+
         when (val state = uiState) {
             is TriviaUiState.Loading, TriviaUiState.Initial -> {
                 Column(
@@ -81,8 +91,13 @@ fun QuestionScreen(
 
             is TriviaUiState.Success -> {
                 val questions = state.questions
+
                 val selectedQuestionIndex by viewModel.currentQuestionIndex.collectAsStateWithLifecycle()
                 val currentQuestion = questions.getOrNull(selectedQuestionIndex)
+                Timber.d("Testing1: Questions: $questions")
+                Timber.d("Testing1: selectedQuestionIndex: $selectedQuestionIndex")
+                Timber.d("Testing1: currentQuestion: $currentQuestion")
+
 
                 if (currentQuestion != null) {
                     Column(

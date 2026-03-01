@@ -24,6 +24,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -34,19 +35,28 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.neo.design.buttons.PrimaryButton
+import com.neo.trivia.ui.trivia.QuizResultViewModel
 import com.neo.trivia.R
 import com.neo.trivia.ui.Components.CollapsibleSection
 import com.neo.trivia.ui.Components.QuizResultCard
-import com.neo.trivia.ui.trivia.TriviaViewModel
+import com.neo.trivia.ui.trivia.QuestionViewModel
+import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizResultScreen(
-    viewModel: TriviaViewModel = hiltViewModel(),
+    viewModel: QuizResultViewModel = hiltViewModel(),
     navController: NavController = rememberNavController()
 ) {
     val score = viewModel.score.collectAsStateWithLifecycle().value
     val quizResults = viewModel.quizResults.collectAsStateWithLifecycle().value
+
+    // Load saved results when screen initializes
+    LaunchedEffect(Unit) {
+        Timber.d("Loading quiz results...")
+        viewModel.loadSavedResults()
+        Timber.d("Quiz results: $quizResults")
+    }
 
 
     Scaffold(
@@ -71,7 +81,7 @@ fun QuizResultScreen(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (true && quizResults.isNotEmpty()) {
+            if (quizResults.isNotEmpty()) {
                 // Score display
                 ScoreCard(score = score, totalQuestions = quizResults.size)
 
