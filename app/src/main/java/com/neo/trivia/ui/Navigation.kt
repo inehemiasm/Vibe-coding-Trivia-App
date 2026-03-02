@@ -124,53 +124,51 @@ fun NavigationApp(
             startDestination = Screen.Home,
             modifier = Modifier.padding(innerPadding)
         ) {
-            navigation<Screen.Home>(startDestination = TriviaScreen()) {
-                composable<TriviaScreen> { backStackEntry ->
-                    val triviaGraphBackStackEntry = remember(backStackEntry) {
-                        navController.getBackStackEntry(Screen.Home)
-                    }
-                    val viewModel: CategoryViewModel = hiltViewModel(triviaGraphBackStackEntry)
+            composable<Screen.Home> { backStackEntry ->
+                val triviaGraphBackStackEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(Screen.Home)
+                }
+                val viewModel: CategoryViewModel = hiltViewModel(triviaGraphBackStackEntry)
 
-                    TriviaScreen(
-                        viewModel = viewModel,
-                        navController = navController
+                TriviaScreen(
+                    viewModel = viewModel,
+                    navController = navController
+                )
+            }
+
+            composable<QuestionScreen> { backStackEntry ->
+                val questionScreen: QuestionScreen = backStackEntry.toRoute()
+                val triviaGraphBackStackEntry = remember(backStackEntry) {
+                    navController.getBackStackEntry(Screen.Home)
+                }
+                val categoryViewModel: CategoryViewModel = hiltViewModel(triviaGraphBackStackEntry)
+                val questionViewModel: QuestionViewModel = hiltViewModel(triviaGraphBackStackEntry)
+
+                val categoriesState by categoryViewModel.categoriesState.collectAsStateWithLifecycle()
+                val category = (categoriesState as? CategoriesScreenState.Success)
+                    ?.categories?.find { it.id == questionScreen.categoryId }
+
+                if (category != null) {
+                    QuestionScreen(
+                        viewModel = questionViewModel,
+                        navController = navController,
+                        difficulty = Difficulty.valueOf(questionScreen.difficulty),
+                        category = category,
+                        onQuizFinished = { _, _ ->
+                            // Results are saved automatically by QuizResultViewModel
+                            navController.navigate(QuizResultScreen)
+                        }
                     )
                 }
+            }
 
-                composable<QuestionScreen> { backStackEntry ->
-                    val questionScreen: QuestionScreen = backStackEntry.toRoute()
-                    val triviaGraphBackStackEntry = remember(backStackEntry) {
-                        navController.getBackStackEntry(Screen.Home)
-                    }
-                    val categoryViewModel: CategoryViewModel = hiltViewModel(triviaGraphBackStackEntry)
-                    val questionViewModel: QuestionViewModel = hiltViewModel(triviaGraphBackStackEntry)
+            composable<QuizResultScreen> { backStackEntry ->
+                val quizResultViewModel: QuizResultViewModel = hiltViewModel()
 
-                    val categoriesState by categoryViewModel.categoriesState.collectAsStateWithLifecycle()
-                    val category = (categoriesState as? CategoriesScreenState.Success)
-                        ?.categories?.find { it.id == questionScreen.categoryId }
-
-                    if (category != null) {
-                        QuestionScreen(
-                            viewModel = questionViewModel,
-                            navController = navController,
-                            difficulty = Difficulty.valueOf(questionScreen.difficulty),
-                            category = category,
-                            onQuizFinished = { _, _ ->
-                                // Results are saved automatically by QuizResultViewModel
-                                navController.navigate(QuizResultScreen)
-                            }
-                        )
-                    }
-                }
-
-                composable<QuizResultScreen> { backStackEntry ->
-                    val quizResultViewModel: QuizResultViewModel = hiltViewModel()
-
-                    QuizResultScreen(
-                        viewModel = quizResultViewModel,
-                        navController = navController
-                    )
-                }
+                QuizResultScreen(
+                    viewModel = quizResultViewModel,
+                    navController = navController
+                )
             }
             composable<Screen.Favorites> {
                 FavoritesScreen(navController = navController)
