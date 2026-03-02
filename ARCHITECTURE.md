@@ -7,7 +7,7 @@ This Trivia app follows the principle that **each screen should have its own ded
 ## Current ViewModels
 
 ### 1. TriviaViewModel
-**Purpose:** Manages the home screen (TriviaScreen)
+**Purpose:** Manages the home screen (CategorySelectionScreen)
 
 **Responsibilities:**
 - Load and manage category list
@@ -18,7 +18,7 @@ This Trivia app follows the principle that **each screen should have its own ded
 - `categoriesState` - List of available quiz categories
 - `uiState` - Current screen state (loading, error, etc.)
 
-**Location:** `app/src/main/java/com/neo/trivia/ui/trivia/TriviaViewModel.kt`
+**Location:** `app/src/main/java/com/neo/trivia/ui/trivia/CategorySelectionViewModel.kt`
 
 ---
 
@@ -76,7 +76,7 @@ This Trivia app follows the principle that **each screen should have its own ded
 
 ---
 
-### 4. CategoryViewModel
+### 4. CategorySelectionViewModel
 **Purpose:** Manages category selection screen
 
 **Responsibilities:**
@@ -84,7 +84,7 @@ This Trivia app follows the principle that **each screen should have its own ded
 - Handle category selection
 - Navigate to QuestionScreen with selected category
 
-**Location:** `app/src/main/java/com/neo/trivia/ui/trivia/CategoryViewModel.kt`
+**Location:** `app/src/main/java/com/neo/trivia/ui/trivia/CategorySelectionViewModel.kt`
 
 ---
 
@@ -142,8 +142,8 @@ This Trivia app follows the principle that **each screen should have its own ded
 
 ### Quiz Flow:
 
-1. **User starts quiz** → `TriviaViewModel` triggers navigation to `CategoryScreen`
-2. **User selects category** → `CategoryViewModel` navigates to `QuestionScreen`
+1. **User starts quiz** → `CategorySelectionViewModel` triggers navigation to `CategorySelectionScreen`
+2. **User selects category** → `CategorySelectionViewModel` navigates to `QuestionScreen`
 3. **QuestionScreen loads** → `QuestionViewModel` loads questions
 4. **User answers** → `QuestionViewModel` stores results and calculates score
 5. **Quiz finished** → `QuestionViewModel` passes data to `QuizResultScreen`

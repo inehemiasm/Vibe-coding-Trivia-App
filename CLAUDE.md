@@ -119,8 +119,8 @@ TriviaApp/
 │   ├── ui/                            # Presentation layer
 │   │   ├── Navigation.kt             # NavHost setup
 │   │   ├── trivia/                    # Trivia screen
-│   │   │   ├── TriviaScreen.kt
-│   │   │   └── TriviaViewModel.kt
+│   │   │   ├── CategorySelectionScreen.kt
+│   │   │   └── CategorySelectionViewModel.kt
 │   │   ├── favorites/                 # Favorites screen
 │   │   │   ├── FavoritesScreen.kt
 │   │   │   └── FavoritesViewModel.kt

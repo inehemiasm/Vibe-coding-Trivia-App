@@ -137,10 +137,10 @@ TriviaApp/
 │   │   ├── ui/
 │   │   │   ├── Navigation.kt           # NavHost setup
 │   │   │   ├── trivia/                 # Trivia screens
-│   │   │   │   ├── TriviaScreen.kt     # Category selection
+│   │   │   │   ├── CategorySelectionScreen.kt # Category selection
 │   │   │   │   ├── QuestionScreen.kt   # Question display
 │   │   │   │   ├── QuizResultScreen.kt # Results display
-│   │   │   │   ├── TriviaViewModel.kt
+│   │   │   │   ├── CategorySelectionViewModel.kt
 │   │   │   │   ├── QuestionViewModel.kt
 │   │   │   │   └── QuizResultViewModel.kt
 │   │   │   ├── favorites/              # Favorites screen
