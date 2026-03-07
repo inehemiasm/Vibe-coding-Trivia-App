@@ -36,7 +36,7 @@ import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.ui.QuestionScreen
 
 @Composable
-fun TriviaScreen(
+fun CategorySelectionScreen(
     navController: NavController,
     viewModel: CategoryViewModel = hiltViewModel()
 ) {
