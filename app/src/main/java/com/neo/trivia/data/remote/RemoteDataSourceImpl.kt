@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.neo.trivia.domain.model.Question as DomainQuestion
+import com.neo.trivia.util.HtmlTextCleaner
 
 /**
  * Remote data source implementation using Retrofit API.
@@ -46,11 +47,11 @@ class RemoteDataSourceImpl @Inject constructor(
                     val questions = response.body()!!.results.mapIndexed { index, apiQuestion ->
                         DomainQuestion(
                             id = index.toString(),
-                            question = apiQuestion.question,
-                            answers = listOf(apiQuestion.correctAnswer, *apiQuestion.incorrectAnswers.toTypedArray()),
-                            correctAnswer = apiQuestion.correctAnswer,
-                            category = apiQuestion.category,
-                            type = apiQuestion.type
+                            question = HtmlTextCleaner.cleanHtmlText(apiQuestion.question),
+                            answers = HtmlTextCleaner.cleanTextList(listOf(apiQuestion.correctAnswer, *apiQuestion.incorrectAnswers.toTypedArray())),
+                            correctAnswer = HtmlTextCleaner.cleanHtmlText(apiQuestion.correctAnswer),
+                            category = HtmlTextCleaner.cleanHtmlText(apiQuestion.category),
+                            type = HtmlTextCleaner.cleanHtmlText(apiQuestion.type)
                         )
                     }
                     emit(Result.Success(questions))
@@ -76,11 +77,11 @@ class RemoteDataSourceImpl @Inject constructor(
                 val questions = response.body()!!.results.mapIndexed { index, apiQuestion ->
                     DomainQuestion(
                         id = index.toString(),
-                        question = apiQuestion.question,
-                        answers = listOf(apiQuestion.correctAnswer, *apiQuestion.incorrectAnswers.toTypedArray()),
-                        correctAnswer = apiQuestion.correctAnswer,
-                        category = apiQuestion.category,
-                        type = apiQuestion.type
+                        question = HtmlTextCleaner.cleanHtmlText(apiQuestion.question),
+                        answers = HtmlTextCleaner.cleanTextList(listOf(apiQuestion.correctAnswer, *apiQuestion.incorrectAnswers.toTypedArray())),
+                        correctAnswer = HtmlTextCleaner.cleanHtmlText(apiQuestion.correctAnswer),
+                        category = HtmlTextCleaner.cleanHtmlText(apiQuestion.category),
+                        type = HtmlTextCleaner.cleanHtmlText(apiQuestion.type)
                     )
                 }
                 Result.Success(questions)
@@ -97,7 +98,7 @@ class RemoteDataSourceImpl @Inject constructor(
             val response = api.getCategories()
             if (response.isSuccessful && response.body() != null) {
                 val categories = response.body()!!.triviaCategories.map { apiCategory ->
-                    Category(id = apiCategory.id, name = apiCategory.name)
+                    Category(id = apiCategory.id, name = HtmlTextCleaner.cleanHtmlText(apiCategory.name))
                 }
                 Result.Success(categories)
             } else {

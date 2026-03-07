@@ -29,4 +29,10 @@ object DomainModule {
     fun provideToggleFavoriteUseCase(repository: TriviaRepository): com.neo.trivia.domain.usecase.ToggleFavoriteUseCase {
         return com.neo.trivia.domain.usecase.ToggleFavoriteUseCase(repository)
     }
+
+    @Provides
+    @Singleton
+    fun provideGetStatisticsUseCase(repository: TriviaRepository): com.neo.trivia.domain.usecase.GetStatisticsUseCase {
+        return com.neo.trivia.domain.usecase.GetStatisticsUseCase(repository)
+    }
 }

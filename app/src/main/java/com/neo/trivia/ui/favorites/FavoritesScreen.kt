@@ -32,6 +32,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.neo.design.cards.AppCard
 import com.neo.design.icons.AppIcon
@@ -41,7 +42,7 @@ import com.neo.trivia.domain.model.Question
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun FavoritesScreen(
-    viewModel: FavoritesViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
+    viewModel: FavoritesViewModel = hiltViewModel(),
     navController: NavController
 ) {
     var searchQuery by remember { mutableStateOf("") }
@@ -82,7 +83,7 @@ fun FavoritesScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            viewModel.isLoading.collectAsState().value?.let { isLoading ->
+            viewModel.isLoading.collectAsState().value.let { isLoading ->
                 if (isLoading) {
                     Box(
                         modifier = Modifier.fillMaxSize(),

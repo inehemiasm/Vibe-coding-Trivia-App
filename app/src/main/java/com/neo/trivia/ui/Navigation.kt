@@ -155,7 +155,7 @@ fun NavigationApp(
             }
 
             composable<QuizResultScreen> { backStackEntry ->
-                val quizResultViewModel: QuizResultViewModel = hiltViewModel()
+                val quizResultViewModel: QuizResultViewModel = hiltViewModel(backStackEntry)
 
                 QuizResultScreen(
                     viewModel = quizResultViewModel,

@@ -28,10 +28,6 @@ import androidx.navigation.NavController
 import com.neo.design.cards.AppCard
 import com.neo.design.cards.StatCard
 import com.neo.design.icons.TriviaIcons
-import com.neo.trivia.domain.model.Question
-import com.neo.trivia.domain.repository.TriviaRepository
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOf
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,6 +74,26 @@ fun StatisticsScreen(
                 value = "$totalQuestions",
                 color = MaterialTheme.colorScheme.error
             )
+
+            // Show a note that quiz results are being fetched
+            AppCard(
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(
+                        text = "Recent Quiz Results",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Bold
+                    )
+                    Text(
+                        text = "Quiz results will appear here after you complete a quiz.",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                }
+            }
 
             // Usage Information
             AppCard(
@@ -127,5 +143,3 @@ fun StatCard(
         modifier = modifier
     )
 }
-
-

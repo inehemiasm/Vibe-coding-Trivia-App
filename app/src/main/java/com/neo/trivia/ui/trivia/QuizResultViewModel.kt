@@ -49,6 +49,10 @@ class QuizResultViewModel @Inject constructor(
             getQuizResultsUseCase.get().collect { results ->
                 Timber.d("Loaded quiz results: $results")
                 _quizResults.value = results
+
+                // Calculate and set the score based on the loaded results
+                val score = results.count { it.isCorrect }
+                _score.value = score
             }
         }
     }

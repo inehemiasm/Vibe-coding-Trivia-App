@@ -112,16 +112,24 @@ class LocalDataSourceImpl @Inject constructor(
     /**
      * Converts Room QuizResultEntity objects to domain QuizResult objects.
      * Note: Question and QuizResult objects are stored as JSON strings due to Room limitations.
-     * For now, we'll just extract the basic question structure.
      */
     private fun entityToQuizResult(entity: QuizResultEntity): QuizResult {
         val questions = com.google.gson.Gson().fromJson(entity.questionsJson, Array<Question>::class.java)
-        val defaultCategoryName = "General Knowledge"
-        return QuizResult(
-            question = questions.firstOrNull() ?: Question("", "", emptyList(), defaultCategoryName, defaultCategoryName, "multiple"),
+        val quizResults = com.google.gson.Gson().fromJson(entity.quizResultsJson, Array<com.neo.trivia.domain.model.QuizResult>::class.java)
+
+        // Get the first quiz result (since we're mapping a single entity to a single QuizResult)
+        val quizResult = quizResults.firstOrNull() ?: return QuizResult(
+            question = questions.firstOrNull() ?: Question("", "", emptyList(), "General Knowledge", "General Knowledge", "multiple"),
             selectedAnswerIndex = -1,
             correctAnswerIndex = -1,
             isCorrect = true
+        )
+
+        return QuizResult(
+            question = questions.firstOrNull() ?: quizResult.question,
+            selectedAnswerIndex = quizResult.selectedAnswerIndex,
+            correctAnswerIndex = quizResult.correctAnswerIndex,
+            isCorrect = quizResult.isCorrect
         )
     }
 

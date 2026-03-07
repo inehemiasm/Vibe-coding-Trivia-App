@@ -1,8 +1,8 @@
 package com.neo.trivia.domain.usecase
 
+import com.neo.trivia.domain.model.QuizResult
 import com.neo.trivia.domain.repository.TriviaRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -10,10 +10,6 @@ import javax.inject.Singleton
 class GetStatisticsUseCase @Inject constructor(
     private val repository: TriviaRepository
 ) {
-    operator fun invoke(): Flow<Int> {
-        return repository.getAllQuestions()
-            .map { questions ->
-                questions.size
-            }
-    }
+    // For now, let's just return the raw quiz results for display
+    fun getQuizResults(): Flow<List<QuizResult>> = repository.getQuizResults()
 }
