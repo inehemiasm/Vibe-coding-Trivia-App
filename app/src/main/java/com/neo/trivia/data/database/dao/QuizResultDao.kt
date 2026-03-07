@@ -19,7 +19,10 @@ interface QuizResultDao {
     @Delete
     suspend fun delete(result: QuizResultEntity)
 
-    @Query("DELETE FROM quiz_results WHERE id IN (SELECT id FROM quiz_results ORDER BY timestamp ASC LIMIT :count - (SELECT COUNT(*) FROM quiz_results))")
+    @Query(
+        "DELETE FROM quiz_results WHERE id IN " +
+        "(SELECT id FROM quiz_results ORDER BY timestamp ASC LIMIT :count - (SELECT COUNT(*) FROM quiz_results))"
+    )
     suspend fun deleteOldest(count: Int)
 
     @Query("SELECT * FROM quiz_results ORDER BY timestamp DESC LIMIT 10")

@@ -1,5 +1,6 @@
 package com.neo.trivia.ui.settings
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,14 +38,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.neo.design.cards.AppCard
+import com.neo.trivia.data.preferences.ThemePreferencesManager
+import com.neo.trivia.ui.theme.ThemeMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     navController: NavController
 ) {
-    var currentTheme by remember { mutableStateOf("Vibrant") }
-    var isDarkMode by remember { mutableStateOf(false) }
+    // We'll get the context from the current composition
+    val currentContext = androidx.compose.ui.platform.LocalContext.current
+    val themePreferencesManager = ThemePreferencesManager(currentContext)
+
+    // For simplicity, we'll use default values for now
+    var currentTheme by remember { mutableStateOf("Vibrant") } // Default to Vibrant
+    var isDarkMode by remember { mutableStateOf(false) } // Default to light mode
 
     Scaffold(
         topBar = {
@@ -79,14 +87,45 @@ fun SettingsScreen(
             item {
                 ThemeSelectionCard(
                     currentTheme = currentTheme,
-                    onThemeSelect = { currentTheme = it }
+                    onThemeSelect = {
+                        currentTheme = it
+                        // Save theme preference when selected
+                        val themeMode = ThemeMode.valueOf(it)
+                        // Using a simple approach for now - in a real app we'd use a ViewModel or proper async handling
+                        try {
+                            // This is a simplified approach for demonstration
+                            kotlinx.coroutines.runBlocking {
+                                themePreferencesManager.saveThemePreferences(themeMode, isDarkMode)
+                            }
+                            // Debug log
+                            android.util.Log.d("ThemeSwitch", "Theme saved: $themeMode, DarkMode: $isDarkMode")
+                        } catch (e: Exception) {
+                            // Handle error
+                            android.util.Log.e("ThemeSwitch", "Error saving theme", e)
+                        }
+                    }
                 )
             }
 
             item {
                 DarkModeToggle(
                     isDarkMode = isDarkMode,
-                    onDarkModeToggle = { isDarkMode = !isDarkMode }
+                    onDarkModeToggle = {
+                        isDarkMode = !isDarkMode
+                        // Save dark mode preference when toggled
+                        val themeMode = ThemeMode.valueOf(currentTheme)
+                        try {
+                            // This is a simplified approach for demonstration
+                            kotlinx.coroutines.runBlocking {
+                                themePreferencesManager.saveThemePreferences(themeMode, isDarkMode)
+                            }
+                            // Debug log
+                            android.util.Log.d("ThemeSwitch", "Dark mode saved: $isDarkMode, Theme: $themeMode")
+                        } catch (e: Exception) {
+                            // Handle error
+                            android.util.Log.e("ThemeSwitch", "Error saving dark mode", e)
+                        }
+                    }
                 )
             }
 
@@ -161,7 +200,9 @@ fun ThemeSelectionCard(
             ThemeOptionChip(
                 text = theme,
                 selected = currentTheme == theme,
-                onClick = { onThemeSelect(theme) }
+                onClick = {
+                    onThemeSelect(theme)
+                }
             )
         }
     }

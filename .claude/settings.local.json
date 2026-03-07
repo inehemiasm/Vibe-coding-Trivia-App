@@ -9,7 +9,8 @@
       "Bash(cd:*)",
       "Bash(cd C:\\\\Users\\\\nehem\\\\AndroidStudioProjects\\\\TriviaApp:*)",
       "Bash(test:*)",
-      "Bash(grep:*)"
+      "Bash(grep:*)",
+      "WebSearch"
     ]
   }
 }

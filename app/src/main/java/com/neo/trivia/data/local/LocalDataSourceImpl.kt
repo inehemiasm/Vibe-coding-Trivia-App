@@ -119,9 +119,9 @@ class LocalDataSourceImpl @Inject constructor(
         val defaultCategoryName = "General Knowledge"
         return QuizResult(
             question = questions.firstOrNull() ?: Question("", "", emptyList(), defaultCategoryName, defaultCategoryName, "multiple"),
-            selectedAnswerIndex = -1, // Cannot retrieve from JSON
-            correctAnswerIndex = -1,  // Cannot retrieve from JSON
-            isCorrect = true           // Cannot retrieve from JSON
+            selectedAnswerIndex = -1,
+            correctAnswerIndex = -1,
+            isCorrect = true
         )
     }
 

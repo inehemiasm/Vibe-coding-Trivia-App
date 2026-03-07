@@ -25,7 +25,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import com.neo.trivia.domain.model.Difficulty
@@ -37,19 +36,12 @@ import com.neo.trivia.ui.trivia.CategoryViewModel
 import com.neo.trivia.ui.trivia.QuestionScreen
 import com.neo.trivia.ui.trivia.QuestionViewModel
 import com.neo.trivia.ui.trivia.QuizResultViewModel
-import com.neo.trivia.ui.trivia.TriviaScreen
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
-import com.neo.trivia.ui.QuizResultScreen
+import com.neo.trivia.ui.trivia.CategorySelectionScreen
 import kotlinx.serialization.Serializable
 import timber.log.Timber
 
 @Serializable
 data class QuestionScreen(val categoryId: Int, val difficulty: String)
-
-@Serializable
-data class TriviaScreen(val category: String? = null)
-
 
 @Serializable
 object QuizResultScreen
@@ -130,7 +122,7 @@ fun NavigationApp(
                 }
                 val viewModel: CategoryViewModel = hiltViewModel(triviaGraphBackStackEntry)
 
-                TriviaScreen(
+                CategorySelectionScreen(
                     viewModel = viewModel,
                     navController = navController
                 )
