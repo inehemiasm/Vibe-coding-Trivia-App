@@ -39,4 +39,6 @@ interface LocalDataSource {
         questions: List<Question>,
         quizResults: List<QuizResult>
     )
+
+    suspend fun getQuizResultById(id: String): Pair<List<Question>, List<QuizResult>>?
 }

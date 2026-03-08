@@ -57,6 +57,7 @@
 
     <!-- Quiz Result Screen -->
     <string name="quiz_results_top_bar_title">Quiz Results</string>
+    <string name="quiz_details_title">Quiz Details</string>
     <string name="quiz_retake">Retake Quiz</string>
     <string name="share_results">Share Results</string>
     <string name="results_summary">Results Summary</string>

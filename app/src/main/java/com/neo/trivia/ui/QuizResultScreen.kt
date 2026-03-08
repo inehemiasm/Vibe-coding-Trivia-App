@@ -39,30 +39,34 @@ import com.neo.trivia.ui.trivia.QuizResultViewModel
 import com.neo.trivia.R
 import com.neo.trivia.ui.Components.CollapsibleSection
 import com.neo.trivia.ui.Components.QuizResultCard
-import com.neo.trivia.ui.trivia.QuestionViewModel
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuizResultScreen(
+    quizResultId: String? = null,
     viewModel: QuizResultViewModel = hiltViewModel(),
     navController: NavController = rememberNavController()
 ) {
     val score = viewModel.score.collectAsStateWithLifecycle().value
     val quizResults = viewModel.quizResults.collectAsStateWithLifecycle().value
 
-    // Load saved results when screen initializes
-    LaunchedEffect(Unit) {
-        Timber.d("Loading quiz results...")
-        viewModel.loadSavedResults()
-        Timber.d("Quiz results: $quizResults")
+    // Load results when screen initializes
+    LaunchedEffect(quizResultId) {
+        if (quizResultId != null) {
+            Timber.d("Loading quiz result by ID: $quizResultId")
+            viewModel.loadResultById(quizResultId)
+        } else {
+            Timber.d("Loading latest quiz results...")
+            viewModel.loadSavedResults()
+        }
     }
 
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.quiz_results_top_bar_title)) },
+                title = { Text(stringResource(if (quizResultId != null) R.string.quiz_details_title else R.string.quiz_results_top_bar_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
@@ -87,29 +91,31 @@ fun QuizResultScreen(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Action buttons
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    OutlinedButton(
-                        onClick = {
-                            viewModel.resetQuiz()
-                            navController.popBackStack()
-                        },
-                        modifier = Modifier.weight(1f)
+                // Only show action buttons if we're not viewing a historical result
+                if (quizResultId == null) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(stringResource(R.string.quiz_retake))
+                        OutlinedButton(
+                            onClick = {
+                                viewModel.resetQuiz()
+                                navController.popBackStack()
+                            },
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(stringResource(R.string.quiz_retake))
+                        }
+
+                        PrimaryButton(
+                            text = stringResource(R.string.share_results),
+                            onClick = { /* TODO: Implement share functionality */ },
+                            modifier = Modifier.weight(1f)
+                        )
                     }
 
-                    PrimaryButton(
-                        text = stringResource(R.string.share_results),
-                        onClick = { /* TODO: Implement share functionality */ },
-                        modifier = Modifier.weight(1f)
-                    )
+                    Spacer(modifier = Modifier.height(24.dp))
                 }
-
-                Spacer(modifier = Modifier.height(24.dp))
 
                 // Results summary
                 CollapsibleSection(
@@ -160,16 +166,18 @@ fun QuizResultScreen(
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         Text(
-                            text = stringResource(R.string.no_quiz_results),
+                            text = if (quizResultId != null) "Loading result details..." else stringResource(R.string.no_quiz_results),
                             style = MaterialTheme.typography.bodyLarge
                         )
-                        PrimaryButton(
-                            text = stringResource(R.string.take_a_quiz),
-                            onClick = {
-                                viewModel.resetQuiz()
-                                navController.popBackStack()
-                            }
-                        )
+                        if (quizResultId == null) {
+                            PrimaryButton(
+                                text = stringResource(R.string.take_a_quiz),
+                                onClick = {
+                                    viewModel.resetQuiz()
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
                     }
                 }
             }

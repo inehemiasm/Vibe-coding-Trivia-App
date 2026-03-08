@@ -17,29 +17,13 @@ import javax.inject.Inject
 class QuizResultViewModel @Inject constructor(
     private val getQuizResultsUseCase: GetQuizResultsUseCase
 ) : ViewModel() {
-
-    private val _uiState = MutableStateFlow<TriviaUiState>(TriviaUiState.Initial)
-    val uiState: StateFlow<TriviaUiState> = _uiState.asStateFlow()
-
-    private val _questions = MutableStateFlow<List<Question>>(emptyList())
-    val currentQuestions: StateFlow<List<Question>> = _questions.asStateFlow()
-
-    private val _currentQuestionIndex = MutableStateFlow(0)
-    val currentQuestionIndex: StateFlow<Int> = _currentQuestionIndex.asStateFlow()
-
     private val _score = MutableStateFlow(0)
     val score: StateFlow<Int> = _score.asStateFlow()
 
     private val _quizResults = MutableStateFlow<List<QuizResult>>(emptyList())
     val quizResults: StateFlow<List<QuizResult>> = _quizResults.asStateFlow()
 
-
-
-
     fun resetQuiz() {
-        _uiState.value = TriviaUiState.Initial
-        _questions.value = emptyList()
-        _currentQuestionIndex.value = 0
         _score.value = 0
         _quizResults.value = emptyList()
     }
@@ -49,10 +33,19 @@ class QuizResultViewModel @Inject constructor(
             getQuizResultsUseCase().collect { results ->
                 Timber.d("Loaded quiz results: $results")
                 _quizResults.value = results
-
-                // Calculate and set the score based on the loaded results
                 val score = results.count { it.isCorrect }
                 _score.value = score
+            }
+        }
+    }
+
+    fun loadResultById(id: String) {
+        viewModelScope.launch {
+            val result = getQuizResultsUseCase.getById(id)
+            if (result != null) {
+                Timber.d("Loaded quiz result by ID: $id, result: $result")
+                _quizResults.value = result.second
+                _score.value = result.second.count { it.isCorrect }
             }
         }
     }

@@ -30,7 +30,6 @@ import androidx.navigation.toRoute
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.ui.favorites.FavoritesScreen
 import com.neo.trivia.ui.settings.SettingsScreen
-import com.neo.trivia.ui.stats.QuizResultDetailScreen
 import com.neo.trivia.ui.stats.StatisticsScreen
 import com.neo.trivia.ui.trivia.CategoriesScreenState
 import com.neo.trivia.ui.trivia.CategoryViewModel
@@ -160,10 +159,8 @@ fun NavigationApp(
             }
 
             composable<QuizResultScreen> { backStackEntry ->
-                val quizResultViewModel: QuizResultViewModel = hiltViewModel(backStackEntry)
-
                 QuizResultScreen(
-                    viewModel = quizResultViewModel,
+                    quizResultId = null,
                     navController = navController
                 )
             }
@@ -177,9 +174,9 @@ fun NavigationApp(
                 SettingsScreen(navController = navController)
             }
             composable<Screen.QuizResultDetailScreen> { backStackEntry ->
-                val quizResultDetailScreen: Screen.QuizResultDetailScreen = backStackEntry.toRoute()
-                QuizResultDetailScreen(
-                    quizResultId = quizResultDetailScreen.quizResultId,
+                val detail: Screen.QuizResultDetailScreen = backStackEntry.toRoute()
+                QuizResultScreen(
+                    quizResultId = detail.quizResultId,
                     navController = navController
                 )
             }

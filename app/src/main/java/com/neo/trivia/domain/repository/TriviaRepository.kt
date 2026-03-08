@@ -40,4 +40,6 @@ interface TriviaRepository {
     fun getQuizHistory(): Flow<List<QuizHistory>>
 
     fun getLatestQuizResult(): Flow<QuizResult?>
+
+    suspend fun getQuizResultById(id: String): Pair<List<Question>, List<QuizResult>>?
 }

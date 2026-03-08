@@ -32,8 +32,6 @@ import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.domain.model.Question
 import com.neo.trivia.ui.Components
-import com.neo.trivia.ui.QuizResultScreen
-import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -94,10 +92,6 @@ fun QuestionScreen(
 
                 val selectedQuestionIndex by viewModel.currentQuestionIndex.collectAsStateWithLifecycle()
                 val currentQuestion = questions.getOrNull(selectedQuestionIndex)
-                Timber.d("Testing1: Questions: $questions")
-                Timber.d("Testing1: selectedQuestionIndex: $selectedQuestionIndex")
-                Timber.d("Testing1: currentQuestion: $currentQuestion")
-
 
                 if (currentQuestion != null) {
                     Column(

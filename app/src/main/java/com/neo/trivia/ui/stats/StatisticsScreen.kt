@@ -30,6 +30,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.neo.design.cards.AppCard
+import com.neo.trivia.ui.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -119,7 +120,7 @@ fun StatisticsScreen(
                     QuizHistoryItem(
                         quizHistory = history,
                         onClick = {
-                            // Navigate to detail if needed
+                            navController.navigate(Screen.QuizResultDetailScreen(history.id))
                         }
                     )
                 }

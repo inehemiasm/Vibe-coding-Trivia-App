@@ -100,4 +100,8 @@ class TriviaRepositoryImpl @Inject constructor(
     override fun getLatestQuizResult(): Flow<QuizResult?> {
         return localDataSource.getLatestQuizResult()
     }
+
+    override suspend fun getQuizResultById(id: String): Pair<List<Question>, List<QuizResult>>? {
+        return localDataSource.getQuizResultById(id)
+    }
 }

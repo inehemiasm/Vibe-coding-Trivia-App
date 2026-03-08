@@ -106,6 +106,15 @@ class LocalDataSourceImpl @Inject constructor(
         }
     }
 
+    private fun deserializeQuestions(json: String): List<Question> {
+        return try {
+            val type = object : TypeToken<List<Question>>() {}.type
+            gson.fromJson(json, type)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
     override fun getQuizResults(): Flow<List<QuizResult>> {
         return quizResultDao.getLatestResult().map { entity ->
             entity?.quizResultsJson?.let { deserializeQuizResults(it) } ?: emptyList()
@@ -139,5 +148,12 @@ class LocalDataSourceImpl @Inject constructor(
             quizResults = quizResults
         )
         quizResultDao.insert(entity)
+    }
+
+    override suspend fun getQuizResultById(id: String): Pair<List<Question>, List<QuizResult>>? {
+        val entity = quizResultDao.getResultById(id) ?: return null
+        val questions = deserializeQuestions(entity.questionsJson)
+        val results = deserializeQuizResults(entity.quizResultsJson)
+        return Pair(questions, results)
     }
 }
