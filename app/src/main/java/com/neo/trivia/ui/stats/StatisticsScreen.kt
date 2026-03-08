@@ -5,8 +5,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -26,8 +30,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.neo.design.cards.AppCard
-import com.neo.design.cards.StatCard
-import com.neo.design.icons.TriviaIcons
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,6 +38,7 @@ fun StatisticsScreen(
     navController: NavController
 ) {
     val totalQuestions by viewModel.totalQuestions.collectAsStateWithLifecycle()
+    val quizHistory by viewModel.quizResultsHistory.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -52,74 +55,103 @@ fun StatisticsScreen(
             )
         }
     ) { paddingValues ->
-        Column(
+        LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(24.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Statistics Cards
-            StatCard(
-                icon = TriviaIcons.Info,
-                title = "Total Questions",
-                value = "$totalQuestions",
-                color = MaterialTheme.colorScheme.primary
-            )
-
-            StatCard(
-                icon = TriviaIcons.Favorite,
-                title = "Favorite Questions",
-                value = "$totalQuestions",
-                color = MaterialTheme.colorScheme.error
-            )
-
-            // Show a note that quiz results are being fetched
-            AppCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Text(
-                        text = "Recent Quiz Results",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
+            item {
+                // Statistics Cards
+                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                    StatCard(
+                        icon = Icons.Default.Info,
+                        title = "Total Questions",
+                        value = "$totalQuestions",
+                        color = MaterialTheme.colorScheme.primary
                     )
-                    Text(
-                        text = "Quiz results will appear here after you complete a quiz.",
-                        style = MaterialTheme.typography.bodyMedium
+
+                    StatCard(
+                        icon = Icons.Default.Favorite,
+                        title = "Favorite Questions",
+                        value = "$totalQuestions",
+                        color = MaterialTheme.colorScheme.error
                     )
                 }
             }
 
-            // Usage Information
-            AppCard(
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier.padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+            item {
+                Text(
+                    text = "Recent Quiz Results",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp)
+                )
+            }
+
+            if (quizHistory.isEmpty()) {
+                item {
+                    AppCard(
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(
+                            modifier = Modifier.padding(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            Text(
+                                text = "No results yet",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+                            Text(
+                                text = "Quiz results will appear here after you complete a quiz.",
+                                style = MaterialTheme.typography.bodyMedium
+                            )
+                        }
+                    }
+                }
+            } else {
+                items(quizHistory) { history ->
+                    QuizHistoryItem(
+                        quizHistory = history,
+                        onClick = {
+                            // Navigate to detail if needed
+                        }
+                    )
+                }
+            }
+
+            item {
+                // Usage Information
+                AppCard(
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text(
-                        text = "Statistics Information",
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold
-                    )
-                    Text(
-                        text = "Total Questions: $totalQuestions",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = "Questions are cached locally for offline access.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                    Text(
-                        text = "You can clear your history at any time.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
+                    Column(
+                        modifier = Modifier.padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Text(
+                            text = "Statistics Information",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = "Total Questions: $totalQuestions",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "Questions are cached locally for offline access.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                        Text(
+                            text = "You can clear your history at any time.",
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
                 }
             }
         }

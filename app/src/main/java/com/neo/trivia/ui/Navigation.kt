@@ -30,6 +30,7 @@ import androidx.navigation.toRoute
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.ui.favorites.FavoritesScreen
 import com.neo.trivia.ui.settings.SettingsScreen
+import com.neo.trivia.ui.stats.QuizResultDetailScreen
 import com.neo.trivia.ui.stats.StatisticsScreen
 import com.neo.trivia.ui.trivia.CategoriesScreenState
 import com.neo.trivia.ui.trivia.CategoryViewModel
@@ -63,6 +64,9 @@ sealed class Screen(
 
     @Serializable
     data object Settings : Screen("settings", "Settings")
+
+    @Serializable
+    data class QuizResultDetailScreen(val quizResultId: String) : Screen("quiz_result_detail", "Quiz Result Detail")
 }
 
 val Screen.icon: ImageVector
@@ -71,6 +75,7 @@ val Screen.icon: ImageVector
         Screen.Favorites -> Icons.Default.Favorite
         Screen.Stats -> Icons.Default.Star
         Screen.Settings -> Icons.Default.Settings
+        else -> Icons.Default.Home
     }
 
 
@@ -170,6 +175,13 @@ fun NavigationApp(
             }
             composable<Screen.Settings> {
                 SettingsScreen(navController = navController)
+            }
+            composable<Screen.QuizResultDetailScreen> { backStackEntry ->
+                val quizResultDetailScreen: Screen.QuizResultDetailScreen = backStackEntry.toRoute()
+                QuizResultDetailScreen(
+                    quizResultId = quizResultDetailScreen.quizResultId,
+                    navController = navController
+                )
             }
         }
     }

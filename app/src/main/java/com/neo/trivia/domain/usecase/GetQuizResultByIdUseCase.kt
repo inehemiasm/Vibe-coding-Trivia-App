@@ -5,8 +5,8 @@ import com.neo.trivia.domain.repository.TriviaRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
-class GetQuizResultsUseCase @Inject constructor(
+class GetQuizResultByIdUseCase @Inject constructor(
     private val triviaRepository: TriviaRepository
 ) {
-    operator fun invoke(): Flow<List<QuizResult>> = triviaRepository.getQuizResults()
+    suspend fun get(id: String): Flow<QuizResult?> = triviaRepository.getLatestQuizResult()
 }

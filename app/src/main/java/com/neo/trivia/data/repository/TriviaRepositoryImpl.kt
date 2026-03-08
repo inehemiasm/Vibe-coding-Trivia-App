@@ -6,6 +6,7 @@ import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.domain.model.Question
 import com.neo.trivia.domain.model.QuizResult
+import com.neo.trivia.domain.model.QuizHistory
 import com.neo.trivia.domain.repository.TriviaRepository
 import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
@@ -61,7 +62,7 @@ class TriviaRepositoryImpl @Inject constructor(
     }
 
     override suspend fun toggleFavorite(question: Question): Boolean {
-        return localDataSource.toggleFavorite(question.question)
+        return localDataSource.toggleFavorite(question.id)
     }
 
     override fun getFavoriteQuestions(): Flow<List<Question>> {
@@ -90,5 +91,13 @@ class TriviaRepositoryImpl @Inject constructor(
 
     override fun getQuizResults(): Flow<List<QuizResult>> {
         return localDataSource.getQuizResults()
+    }
+
+    override fun getQuizHistory(): Flow<List<QuizHistory>> {
+        return localDataSource.getQuizHistory()
+    }
+
+    override fun getLatestQuizResult(): Flow<QuizResult?> {
+        return localDataSource.getLatestQuizResult()
     }
 }

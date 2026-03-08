@@ -20,7 +20,7 @@ object DatabaseModule {
             TriviaDatabase::class.java,
             "trivia_database"
         )
-            .fallbackToDestructiveMigration()
+            .fallbackToDestructiveMigration(true)
             .build()
     }
 

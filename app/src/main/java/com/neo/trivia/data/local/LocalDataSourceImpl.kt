@@ -1,5 +1,7 @@
 package com.neo.trivia.data.local
 
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import com.neo.trivia.data.database.dao.FavoriteDao
 import com.neo.trivia.data.database.dao.QuestionDao
 import com.neo.trivia.data.database.dao.QuizResultDao
@@ -9,31 +11,20 @@ import com.neo.trivia.data.database.entity.QuizResultEntity
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Question
 import com.neo.trivia.domain.model.QuizResult
+import com.neo.trivia.domain.model.QuizHistory
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
-/**
- * Local data source implementation using Room database.
- * Handles all local database operations including:
- * - Question caching and retrieval
- * - Favorite question management
- * - Search functionality
- * - Quiz history tracking
- *
- * This implementation converts between Room entities and domain Question models.
- */
 @Singleton
 class LocalDataSourceImpl @Inject constructor(
     private val questionDao: QuestionDao,
     private val favoriteDao: FavoriteDao,
-    private val quizResultDao: QuizResultDao
+    private val quizResultDao: QuizResultDao,
+    private val gson: Gson
 ) : LocalDataSource {
 
-    /**
-     * Converts domain Question objects to Room QuestionEntity objects.
-     */
     private fun questionToEntity(question: Question): QuestionEntity {
         return QuestionEntity(
             id = question.id,
@@ -45,9 +36,6 @@ class LocalDataSourceImpl @Inject constructor(
         )
     }
 
-    /**
-     * Converts Room QuestionEntity objects to domain Question objects.
-     */
     private fun entityToQuestion(entity: QuestionEntity): Question {
         return Question(
             id = entity.id,
@@ -109,39 +97,30 @@ class LocalDataSourceImpl @Inject constructor(
         favoriteDao.insert(FavoriteEntity(questionId = questionId))
     }
 
-    /**
-     * Converts Room QuizResultEntity objects to domain QuizResult objects.
-     * Note: Question and QuizResult objects are stored as JSON strings due to Room limitations.
-     */
-    private fun entityToQuizResult(entity: QuizResultEntity): QuizResult {
-        val questions = com.google.gson.Gson().fromJson(entity.questionsJson, Array<Question>::class.java)
-        val quizResults = com.google.gson.Gson().fromJson(entity.quizResultsJson, Array<com.neo.trivia.domain.model.QuizResult>::class.java)
-
-        // Get the first quiz result (since we're mapping a single entity to a single QuizResult)
-        val quizResult = quizResults.firstOrNull() ?: return QuizResult(
-            question = questions.firstOrNull() ?: Question("", "", emptyList(), "General Knowledge", "General Knowledge", "multiple"),
-            selectedAnswerIndex = -1,
-            correctAnswerIndex = -1,
-            isCorrect = true
-        )
-
-        return QuizResult(
-            question = questions.firstOrNull() ?: quizResult.question,
-            selectedAnswerIndex = quizResult.selectedAnswerIndex,
-            correctAnswerIndex = quizResult.correctAnswerIndex,
-            isCorrect = quizResult.isCorrect
-        )
-    }
-
-    override fun getQuizResults(): Flow<List<com.neo.trivia.domain.model.QuizResult>> {
-        return quizResultDao.getRecentResults().map { entities ->
-            entities.map { entityToQuizResult(it) }
+    private fun deserializeQuizResults(json: String): List<QuizResult> {
+        return try {
+            val type = object : TypeToken<List<QuizResult>>() {}.type
+            gson.fromJson(json, type)
+        } catch (e: Exception) {
+            emptyList()
         }
     }
 
-    override fun getLatestQuizResult(): Flow<com.neo.trivia.domain.model.QuizResult?> {
+    override fun getQuizResults(): Flow<List<QuizResult>> {
         return quizResultDao.getLatestResult().map { entity ->
-            entity?.let { entityToQuizResult(it) }
+            entity?.quizResultsJson?.let { deserializeQuizResults(it) } ?: emptyList()
+        }
+    }
+
+    override fun getQuizHistory(): Flow<List<QuizHistory>> {
+        return quizResultDao.getRecentResults().map { entities ->
+            entities.map { QuizHistory.fromQuizResultEntity(it) }
+        }
+    }
+
+    override fun getLatestQuizResult(): Flow<QuizResult?> {
+        return quizResultDao.getLatestResult().map { entity ->
+            entity?.quizResultsJson?.let { deserializeQuizResults(it).firstOrNull() }
         }
     }
 
@@ -150,15 +129,15 @@ class LocalDataSourceImpl @Inject constructor(
         score: Int,
         totalQuestions: Int,
         questions: List<Question>,
-        quizResults: List<QuizResult>,
+        quizResults: List<QuizResult>
     ) {
-        val quizResultEntity = QuizResultEntity.from(
-            category,
-            score,
-            totalQuestions,
-            questions,
-            quizResults
+        val entity = QuizResultEntity.from(
+            category = category,
+            score = score,
+            totalQuestions = totalQuestions,
+            questions = questions,
+            quizResults = quizResults
         )
-        quizResultDao.insert(quizResultEntity)
+        quizResultDao.insert(entity)
     }
 }

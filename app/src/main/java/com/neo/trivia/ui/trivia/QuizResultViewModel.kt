@@ -46,7 +46,7 @@ class QuizResultViewModel @Inject constructor(
 
     fun loadSavedResults() {
         viewModelScope.launch {
-            getQuizResultsUseCase.get().collect { results ->
+            getQuizResultsUseCase().collect { results ->
                 Timber.d("Loaded quiz results: $results")
                 _quizResults.value = results
 

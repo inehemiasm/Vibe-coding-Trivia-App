@@ -1,5 +1,7 @@
 package com.neo.trivia.data.di
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import com.neo.trivia.data.api.TriviaApi
 import com.neo.trivia.data.database.TriviaDatabase
 import com.neo.trivia.data.local.LocalDataSource
@@ -19,6 +21,12 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DataModule {
+
+    @Provides
+    @Singleton
+    fun provideGson(): Gson {
+        return GsonBuilder().create()
+    }
 
     @Provides
     @Singleton
@@ -48,8 +56,14 @@ object DataModule {
     @Provides
     @Singleton
     fun provideLocalDataSource(
-        database: TriviaDatabase
+        database: TriviaDatabase,
+        gson: Gson
     ): LocalDataSource {
-        return LocalDataSourceImpl(database.questionDao(), database.favoriteDao(), database.quizResultDao())
+        return LocalDataSourceImpl(
+            questionDao = database.questionDao(),
+            favoriteDao = database.favoriteDao(),
+            quizResultDao = database.quizResultDao(),
+            gson = gson
+        )
     }
 }
