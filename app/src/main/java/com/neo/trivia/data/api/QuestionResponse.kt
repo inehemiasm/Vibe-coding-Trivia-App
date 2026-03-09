@@ -6,7 +6,7 @@ data class QuestionResponse(
     @SerializedName("response_code")
     val responseCode: Int,
     @SerializedName("results")
-    val results: List<QuestionModel>
+    val results: List<QuestionModel>,
 )
 
 data class QuestionModel(
@@ -19,7 +19,7 @@ data class QuestionModel(
     @SerializedName("category")
     val category: String,
     @SerializedName("type")
-    val type: String
+    val type: String,
 ) {
     val allAnswers: List<String>
         get() = (incorrectAnswers + correctAnswer).shuffled()

@@ -59,7 +59,10 @@ interface QuizHistoryDao {
      * @return Flow of QuizHistoryEntity objects
      */
     @Query("SELECT * FROM quiz_history WHERE quizDate BETWEEN :startDate AND :endDate ORDER BY quizDate DESC")
-    fun getQuizHistoryByDateRange(startDate: String, endDate: String): Flow<List<QuizHistoryEntity>>
+    fun getQuizHistoryByDateRange(
+        startDate: String,
+        endDate: String,
+    ): Flow<List<QuizHistoryEntity>>
 
     /**
      * Retrieves all quiz history entries ordered by category and date.
@@ -73,7 +76,10 @@ interface QuizHistoryDao {
      * @param quizHistory QuizHistoryEntity object to delete
      */
     @Query("DELETE FROM quiz_history WHERE categoryName = :categoryName AND quizDate = :quizDate")
-    suspend fun deleteQuizHistory(categoryName: String, quizDate: String)
+    suspend fun deleteQuizHistory(
+        categoryName: String,
+        quizDate: String,
+    )
 
     /**
      * Deletes all quiz history entries.

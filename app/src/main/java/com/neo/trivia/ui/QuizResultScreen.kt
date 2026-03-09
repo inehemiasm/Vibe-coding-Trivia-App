@@ -25,20 +25,22 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.neo.design.buttons.PrimaryButton
-import com.neo.trivia.ui.trivia.QuizResultViewModel
 import com.neo.trivia.R
 import com.neo.trivia.ui.Components.CollapsibleSection
 import com.neo.trivia.ui.Components.QuizResultCard
+import com.neo.trivia.ui.trivia.QuizResultIntent
+import com.neo.trivia.ui.trivia.QuizResultViewModel
 import timber.log.Timber
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -46,63 +48,63 @@ import timber.log.Timber
 fun QuizResultScreen(
     quizResultId: String? = null,
     viewModel: QuizResultViewModel = hiltViewModel(),
-    navController: NavController = rememberNavController()
+    navController: NavController = rememberNavController(),
 ) {
-    val score = viewModel.score.collectAsStateWithLifecycle().value
-    val quizResults = viewModel.quizResults.collectAsStateWithLifecycle().value
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Load results when screen initializes
     LaunchedEffect(quizResultId) {
         if (quizResultId != null) {
             Timber.d("Loading quiz result by ID: $quizResultId")
-            viewModel.loadResultById(quizResultId)
+            viewModel.onIntent(QuizResultIntent.LoadResultById(quizResultId))
         } else {
             Timber.d("Loading latest quiz results...")
-            viewModel.loadSavedResults()
+            viewModel.onIntent(QuizResultIntent.LoadSavedResults)
         }
     }
-
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(if (quizResultId != null) R.string.quiz_details_title else R.string.quiz_results_top_bar_title)) },
+                title = {
+                    Text(
+                        stringResource(if (quizResultId != null) R.string.quiz_details_title else R.string.quiz_results_top_bar_title),
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            if (quizResults.isNotEmpty()) {
-                // Score display
-                ScoreCard(score = score, totalQuestions = quizResults.size)
+            if (state.quizResults.isNotEmpty()) {
+                ScoreCard(score = state.score, totalQuestions = state.quizResults.size)
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Only show action buttons if we're not viewing a historical result
                 if (quizResultId == null) {
                     Row(
                         horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         OutlinedButton(
                             onClick = {
-                                viewModel.resetQuiz()
+                                viewModel.onIntent(QuizResultIntent.ResetQuiz)
                                 navController.popBackStack()
                             },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         ) {
                             Text(stringResource(R.string.quiz_retake))
                         }
@@ -110,72 +112,68 @@ fun QuizResultScreen(
                         PrimaryButton(
                             text = stringResource(R.string.share_results),
                             onClick = { /* TODO: Implement share functionality */ },
-                            modifier = Modifier.weight(1f)
+                            modifier = Modifier.weight(1f),
                         )
                     }
 
                     Spacer(modifier = Modifier.height(24.dp))
                 }
 
-                // Results summary
                 CollapsibleSection(
                     title = stringResource(R.string.results_summary),
-                    titleColor = MaterialTheme.colorScheme.onBackground
+                    titleColor = MaterialTheme.colorScheme.onBackground,
                 ) {
                     StatsSummary(
-                        totalQuestions = quizResults.size,
-                        correctAnswers = score,
-                        incorrectAnswers = quizResults.size - score
+                        totalQuestions = state.quizResults.size,
+                        correctAnswers = state.score,
+                        incorrectAnswers = state.quizResults.size - state.score,
                     )
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Questions list
                 Text(
                     text = stringResource(R.string.question_review),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    modifier = Modifier.align(Alignment.Start)
+                    modifier = Modifier.align(Alignment.Start),
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
 
                 LazyColumn(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
                 ) {
-                    items(quizResults) { result ->
+                    items(state.quizResults) { result ->
                         QuizResultCard(
                             question = result.question,
                             selectedAnswerIndex = result.selectedAnswerIndex,
                             correctAnswerIndex = result.correctAnswerIndex,
-                            isCorrect = result.isCorrect
+                            isCorrect = result.isCorrect,
                         )
                     }
                 }
-
             } else {
-                // No results available
                 Box(
                     modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
+                    contentAlignment = Alignment.Center,
                 ) {
                     Column(
                         horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                        verticalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
                         Text(
                             text = if (quizResultId != null) "Loading result details..." else stringResource(R.string.no_quiz_results),
-                            style = MaterialTheme.typography.bodyLarge
+                            style = MaterialTheme.typography.bodyLarge,
                         )
                         if (quizResultId == null) {
                             PrimaryButton(
                                 text = stringResource(R.string.take_a_quiz),
                                 onClick = {
-                                    viewModel.resetQuiz()
+                                    viewModel.onIntent(QuizResultIntent.ResetQuiz)
                                     navController.popBackStack()
-                                }
+                                },
                             )
                         }
                     }
@@ -189,41 +187,46 @@ fun QuizResultScreen(
 fun ScoreCard(
     score: Int,
     totalQuestions: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val percentage = if (totalQuestions > 0) {
-        (score * 100) / totalQuestions
-    } else 0
+    val percentage =
+        if (totalQuestions > 0) {
+            (score * 100) / totalQuestions
+        } else {
+            0
+        }
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.primaryContainer,
+            ),
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(24.dp),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             Text(
                 text = stringResource(R.string.quiz_completed),
                 style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
 
             Text(
                 text = "$score / $totalQuestions",
                 style = MaterialTheme.typography.displaySmall,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
             )
 
             Text(
                 text = stringResource(R.string.correct_percentage, percentage),
                 style = MaterialTheme.typography.titleMedium,
-                color = MaterialTheme.colorScheme.primary
+                color = MaterialTheme.colorScheme.primary,
             )
         }
     }
@@ -234,38 +237,40 @@ fun StatsSummary(
     totalQuestions: Int,
     correctAnswers: Int,
     incorrectAnswers: Int,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Card(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
+        colors =
+            CardDefaults.cardColors(
+                containerColor = MaterialTheme.colorScheme.surfaceVariant,
+            ),
     ) {
         Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceAround
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+            horizontalArrangement = Arrangement.SpaceAround,
         ) {
             StatItem(
                 label = R.string.stat_total_questions_label,
                 value = totalQuestions.toString(),
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
 
             StatItem(
                 label = R.string.stat_correct_label,
                 value = correctAnswers.toString(),
                 valueColor = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
 
             StatItem(
                 label = R.string.stat_incorrect_label,
                 value = incorrectAnswers.toString(),
                 valueColor = MaterialTheme.colorScheme.error,
-                modifier = Modifier.weight(1f)
+                modifier = Modifier.weight(1f),
             )
         }
     }
@@ -276,23 +281,23 @@ fun StatItem(
     label: Int,
     value: String,
     valueColor: androidx.compose.ui.graphics.Color = MaterialTheme.colorScheme.onSurface,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
         modifier = modifier,
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp)
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         Text(
             text = value,
             style = MaterialTheme.typography.headlineSmall,
             fontWeight = FontWeight.Bold,
-            color = valueColor
+            color = valueColor,
         )
         Text(
             text = stringResource(label),
             style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
 }

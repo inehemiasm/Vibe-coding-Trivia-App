@@ -8,10 +8,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetStatisticsUseCase @Inject constructor(
-    private val repository: TriviaRepository
-) {
-    fun getResultsHistory(): Flow<List<QuizHistory>> = repository.getQuizHistory()
+class GetStatisticsUseCase
+    @Inject
+    constructor(
+        private val repository: TriviaRepository,
+    ) {
+        fun getResultsHistory(): Flow<List<QuizHistory>> = repository.getQuizHistory()
 
-    fun getQuizResults(): Flow<List<QuizResult>> = repository.getQuizResults()
-}
+        fun getQuizResults(): Flow<List<QuizResult>> = repository.getQuizResults()
+    }

@@ -16,7 +16,7 @@ data class QuizResultEntity(
     val score: Int,
     val totalQuestions: Int,
     val questionsJson: String,
-    val quizResultsJson: String
+    val quizResultsJson: String,
 ) {
     companion object {
         fun from(
@@ -24,7 +24,7 @@ data class QuizResultEntity(
             score: Int,
             totalQuestions: Int,
             questions: List<Question>,
-            quizResults: List<com.neo.trivia.domain.model.QuizResult>
+            quizResults: List<com.neo.trivia.domain.model.QuizResult>,
         ): QuizResultEntity {
             return QuizResultEntity(
                 categoryName = category.name,
@@ -32,7 +32,7 @@ data class QuizResultEntity(
                 score = score,
                 totalQuestions = totalQuestions,
                 questionsJson = com.google.gson.Gson().toJson(questions),
-                quizResultsJson = com.google.gson.Gson().toJson(quizResults)
+                quizResultsJson = com.google.gson.Gson().toJson(quizResults),
             )
         }
     }

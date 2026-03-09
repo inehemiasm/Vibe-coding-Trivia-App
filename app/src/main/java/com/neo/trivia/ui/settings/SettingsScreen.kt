@@ -1,6 +1,5 @@
 package com.neo.trivia.ui.settings
 
-import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,7 +15,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -25,13 +23,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -40,19 +36,18 @@ import androidx.navigation.NavController
 import com.neo.design.cards.AppCard
 import com.neo.trivia.data.preferences.ThemePreferencesManager
 import com.neo.trivia.ui.theme.ThemeMode
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SettingsScreen(
-    navController: NavController
-) {
-    // We'll get the context from the current composition
+fun SettingsScreen(navController: NavController) {
     val currentContext = androidx.compose.ui.platform.LocalContext.current
     val themePreferencesManager = ThemePreferencesManager(currentContext)
+    val scope = rememberCoroutineScope()
 
-    // For simplicity, we'll use default values for now
-    var currentTheme by remember { mutableStateOf("Vibrant") } // Default to Vibrant
-    var isDarkMode by remember { mutableStateOf(false) } // Default to light mode
+    val themeData by themePreferencesManager.getThemePreferences().collectAsState(
+        initial = com.neo.trivia.data.ThemePreferencesData(ThemeMode.Vibrant, false)
+    )
 
     Scaffold(
         topBar = {
@@ -62,70 +57,54 @@ fun SettingsScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
         LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             item {
                 Text(
                     text = "Appearance",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
 
             item {
                 ThemeSelectionCard(
-                    currentTheme = currentTheme,
-                    onThemeSelect = {
-                        currentTheme = it
-                        // Save theme preference when selected
-                        val themeMode = ThemeMode.valueOf(it)
-                        // Using a simple approach for now - in a real app we'd use a ViewModel or proper async handling
-                        try {
-                            // This is a simplified approach for demonstration
-                            kotlinx.coroutines.runBlocking {
-                                themePreferencesManager.saveThemePreferences(themeMode, isDarkMode)
-                            }
-                            // Debug log
-                            android.util.Log.d("ThemeSwitch", "Theme saved: $themeMode, DarkMode: $isDarkMode")
-                        } catch (e: Exception) {
-                            // Handle error
-                            android.util.Log.e("ThemeSwitch", "Error saving theme", e)
+                    currentTheme = themeData.themeMode.name,
+                    onThemeSelect = { selectedTheme ->
+                        scope.launch {
+                            themePreferencesManager.saveThemePreferences(
+                                ThemeMode.valueOf(selectedTheme),
+                                themeData.isDarkMode
+                            )
                         }
-                    }
+                    },
                 )
             }
 
             item {
                 DarkModeToggle(
-                    isDarkMode = isDarkMode,
+                    isDarkMode = themeData.isDarkMode,
                     onDarkModeToggle = {
-                        isDarkMode = !isDarkMode
-                        // Save dark mode preference when toggled
-                        val themeMode = ThemeMode.valueOf(currentTheme)
-                        try {
-                            // This is a simplified approach for demonstration
-                            kotlinx.coroutines.runBlocking {
-                                themePreferencesManager.saveThemePreferences(themeMode, isDarkMode)
-                            }
-                            // Debug log
-                            android.util.Log.d("ThemeSwitch", "Dark mode saved: $isDarkMode, Theme: $themeMode")
-                        } catch (e: Exception) {
-                            // Handle error
-                            android.util.Log.e("ThemeSwitch", "Error saving dark mode", e)
+                        scope.launch {
+                            themePreferencesManager.saveThemePreferences(
+                                themeData.themeMode,
+                                !themeData.isDarkMode
+                            )
                         }
-                    }
+                    },
                 )
             }
 
@@ -134,7 +113,7 @@ fun SettingsScreen(
                 Text(
                     text = "About",
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
                 )
             }
 
@@ -142,36 +121,36 @@ fun SettingsScreen(
                 AppCard(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalPadding = 16.dp,
-                    verticalPadding = 16.dp
+                    verticalPadding = 16.dp,
                 ) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         Row(
                             verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
                             Icon(
                                 imageVector = Icons.Default.Info,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
+                                tint = MaterialTheme.colorScheme.primary,
                             )
                             Text(
                                 text = "Trivia App",
                                 style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
+                                fontWeight = FontWeight.Bold,
                             )
                         }
                         Text(
                             text = "Version 1.0",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Text(
                             text = "Built with Clean Architecture, Jetpack Compose, and Hilt",
                             style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
@@ -183,17 +162,17 @@ fun SettingsScreen(
 @Composable
 fun ThemeSelectionCard(
     currentTheme: String,
-    onThemeSelect: (String) -> Unit
+    onThemeSelect: (String) -> Unit,
 ) {
     val themes = listOf("Vibrant", "Ocean", "Sunset", "Mint")
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(12.dp)
+        verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
             text = "Select Theme",
             style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
         themes.forEach { theme ->
@@ -202,7 +181,7 @@ fun ThemeSelectionCard(
                 selected = currentTheme == theme,
                 onClick = {
                     onThemeSelect(theme)
-                }
+                },
             )
         }
     }
@@ -212,92 +191,68 @@ fun ThemeSelectionCard(
 fun ThemeOptionChip(
     text: String,
     selected: Boolean,
-    onClick: () -> Unit
+    onClick: () -> Unit,
 ) {
     FilterChip(
         selected = selected,
         onClick = onClick,
         label = { Text(text) },
-        leadingIcon = if (selected) {
-            {
-                Icon(
-                    imageVector = Icons.Default.Check,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp)
-                )
-            }
-        } else null
+        leadingIcon =
+            if (selected) {
+                {
+                    Icon(
+                        imageVector = Icons.Default.Check,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+            } else {
+                null
+            },
     )
 }
 
 @Composable
 fun DarkModeToggle(
     isDarkMode: Boolean,
-    onDarkModeToggle: () -> Unit
+    onDarkModeToggle: () -> Unit,
 ) {
-    var showConfirmation by remember { mutableStateOf(false) }
-
     AppCard(
         modifier = Modifier.fillMaxWidth(),
-        onClick = { if (!isDarkMode) showConfirmation = true },
         horizontalPadding = 16.dp,
-        verticalPadding = 16.dp
+        verticalPadding = 16.dp,
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 Icon(
                     imageVector = Icons.Default.Settings,
                     contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary
+                    tint = MaterialTheme.colorScheme.primary,
                 )
                 Column {
                     Text(
                         text = "Dark Mode",
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
                         text = if (isDarkMode) "Currently enabled" else "Enable dark theme",
                         style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
 
             Switch(
                 checked = isDarkMode,
-                onCheckedChange = { onDarkModeToggle() },
-                enabled = !isDarkMode
+                onCheckedChange = { onDarkModeToggle() }
             )
         }
-    }
-
-    if (showConfirmation) {
-        AlertDialog(
-            onDismissRequest = { showConfirmation = false },
-            title = { Text("Enable Dark Mode") },
-            text = { Text("Dark mode will be enabled in the next session.") },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        showConfirmation = false
-                        onDarkModeToggle()
-                    }
-                ) {
-                    Text("Enable")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showConfirmation = false }) {
-                    Text("Cancel")
-                }
-            }
-        )
     }
 }

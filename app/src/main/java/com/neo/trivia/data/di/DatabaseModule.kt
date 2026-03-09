@@ -11,14 +11,13 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DatabaseModule {
-
     @Provides
     @Singleton
     fun provideTriviaDatabase(app: android.app.Application): TriviaDatabase {
         return Room.databaseBuilder(
             app,
             TriviaDatabase::class.java,
-            "trivia_database"
+            "trivia_database",
         )
             .fallbackToDestructiveMigration(true)
             .build()

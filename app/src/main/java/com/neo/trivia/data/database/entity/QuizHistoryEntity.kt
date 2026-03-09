@@ -1,7 +1,6 @@
 package com.neo.trivia.data.database.entity
 
 import androidx.room.Entity
-import androidx.room.PrimaryKey
 
 /**
  * Room entity representing a quiz history entry.
@@ -17,7 +16,7 @@ import androidx.room.PrimaryKey
  */
 @Entity(
     tableName = "quiz_history",
-    primaryKeys = ["categoryName", "quizDate"]
+    primaryKeys = ["categoryName", "quizDate"],
 )
 data class QuizHistoryEntity(
     val categoryName: String,
@@ -26,5 +25,5 @@ data class QuizHistoryEntity(
     val totalQuestions: Int,
     val questionsJson: String,
     val quizResultsJson: String,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
 )

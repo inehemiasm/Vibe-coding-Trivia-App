@@ -7,7 +7,6 @@ import java.nio.charset.StandardCharsets
  * Utility class for cleaning HTML entities from text
  */
 object HtmlTextCleaner {
-
     /**
      * Cleans HTML entities from text including:
      * - HTML tags

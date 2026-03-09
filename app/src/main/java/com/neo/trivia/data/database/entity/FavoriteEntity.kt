@@ -13,5 +13,5 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "favorites")
 data class FavoriteEntity(
     @PrimaryKey
-    val questionId: String
+    val questionId: String,
 )

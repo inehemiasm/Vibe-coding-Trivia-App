@@ -24,5 +24,5 @@ data class QuestionEntity(
     val incorrectAnswers: List<String>,
     val category: String,
     val type: String,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
 )

@@ -1,7 +1,6 @@
 package com.neo.design.icons
 
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
@@ -14,12 +13,12 @@ fun AppIcon(
     icon: ImageVector,
     contentDescription: String? = null,
     size: IconSize = IconSize.Medium,
-    tint: Color? = null
+    tint: Color? = null,
 ) {
     Icon(
         imageVector = icon,
         contentDescription = contentDescription,
         modifier = Modifier.size(size.value),
-        tint = tint ?: MaterialTheme.colorScheme.onSurface
+        tint = tint ?: MaterialTheme.colorScheme.onSurface,
     )
 }

@@ -8,14 +8,16 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetQuestionsUseCase @Inject constructor(
-    private val repository: TriviaRepository
-) {
-    suspend operator fun invoke(
-        amount: Int, 
-        category: Category? = null, 
-        difficulty: Difficulty
-    ): Result<List<Question>> {
-        return repository.getQuestions(amount, category, difficulty)
+class GetQuestionsUseCase
+    @Inject
+    constructor(
+        private val repository: TriviaRepository,
+    ) {
+        suspend operator fun invoke(
+            amount: Int,
+            category: Category? = null,
+            difficulty: Difficulty,
+        ): Result<List<Question>> {
+            return repository.getQuestions(amount, category, difficulty)
+        }
     }
-}

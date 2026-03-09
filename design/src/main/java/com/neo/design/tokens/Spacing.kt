@@ -4,10 +4,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 enum class Spacing(val value: Dp) {
-    xs(4.dp),
-    sm(8.dp),
-    md(16.dp),
-    lg(24.dp),
-    xl(32.dp),
-    xxl(48.dp)
+    XS(4.dp),
+    SM(8.dp),
+    MD(16.dp),
+    LG(24.dp),
+    XL(32.dp),
+    XXL(48.dp),
 }

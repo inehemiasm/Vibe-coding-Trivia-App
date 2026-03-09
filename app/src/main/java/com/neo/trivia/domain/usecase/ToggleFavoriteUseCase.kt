@@ -6,10 +6,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class ToggleFavoriteUseCase @Inject constructor(
-    private val repository: TriviaRepository
-) {
-    suspend operator fun invoke(question: Question): Boolean {
-        return repository.toggleFavorite(question)
+class ToggleFavoriteUseCase
+    @Inject
+    constructor(
+        private val repository: TriviaRepository,
+    ) {
+        suspend operator fun invoke(question: Question): Boolean {
+            return repository.toggleFavorite(question)
+        }
     }
-}

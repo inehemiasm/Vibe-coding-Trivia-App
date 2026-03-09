@@ -7,5 +7,5 @@ data class QuizResult(
     val question: Question,
     val selectedAnswerIndex: Int,
     val correctAnswerIndex: Int,
-    val isCorrect: Boolean
+    val isCorrect: Boolean,
 )

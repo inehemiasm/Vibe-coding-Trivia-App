@@ -18,5 +18,5 @@ data class CategoryEntity(
     val id: String,
     val name: String,
     val icon: String,
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
 )

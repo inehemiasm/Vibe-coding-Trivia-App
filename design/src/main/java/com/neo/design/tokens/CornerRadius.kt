@@ -4,8 +4,8 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
 enum class CornerRadius(val value: Dp) {
-    sm(8.dp),
-    md(12.dp),
-    lg(16.dp),
-    xl(20.dp)
+    SM(8.dp),
+    MD(12.dp),
+    LG(16.dp),
+    XL(20.dp),
 }

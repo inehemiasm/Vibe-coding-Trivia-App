@@ -9,5 +9,5 @@ data class Question(
     val answers: List<String>,
     val correctAnswer: String,
     val category: String,
-    val type: String
+    val type: String,
 )

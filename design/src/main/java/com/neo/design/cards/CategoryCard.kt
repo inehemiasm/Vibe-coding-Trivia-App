@@ -21,22 +21,22 @@ fun CategoryCard(
     categoryName: String,
     modifier: Modifier = Modifier,
     onCategoryClick: () -> Unit,
-    border: BorderStroke? = null
+    border: BorderStroke? = null,
 ) {
     Card(
         modifier = modifier.padding(8.dp).clickable { onCategoryClick() },
-        border = border
+        border = border,
     ) {
         Column(
             modifier = Modifier.fillMaxSize().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
+            verticalArrangement = Arrangement.Center,
         ) {
             Text(
                 text = categoryName,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
+                textAlign = TextAlign.Center,
             )
         }
     }

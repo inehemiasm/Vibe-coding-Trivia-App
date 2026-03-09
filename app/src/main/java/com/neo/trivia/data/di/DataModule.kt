@@ -21,7 +21,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DataModule {
-
     @Provides
     @Singleton
     fun provideGson(): Gson {
@@ -31,13 +30,15 @@ object DataModule {
     @Provides
     @Singleton
     fun provideTriviaApi(): TriviaApi {
-        val loggingInterceptor = HttpLoggingInterceptor().apply {
-            level = HttpLoggingInterceptor.Level.BODY
-        }
+        val loggingInterceptor =
+            HttpLoggingInterceptor().apply {
+                level = HttpLoggingInterceptor.Level.BODY
+            }
 
-        val okHttpClient = OkHttpClient.Builder()
-            .addInterceptor(loggingInterceptor)
-            .build()
+        val okHttpClient =
+            OkHttpClient.Builder()
+                .addInterceptor(loggingInterceptor)
+                .build()
 
         return Retrofit.Builder()
             .baseUrl(com.neo.trivia.data.api.ApiConstants.BASE_URL)
@@ -57,13 +58,13 @@ object DataModule {
     @Singleton
     fun provideLocalDataSource(
         database: TriviaDatabase,
-        gson: Gson
+        gson: Gson,
     ): LocalDataSource {
         return LocalDataSourceImpl(
             questionDao = database.questionDao(),
             favoriteDao = database.favoriteDao(),
             quizResultDao = database.quizResultDao(),
-            gson = gson
+            gson = gson,
         )
     }
 }

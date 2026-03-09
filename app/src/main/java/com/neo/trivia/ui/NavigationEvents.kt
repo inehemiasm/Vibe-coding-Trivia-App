@@ -11,7 +11,9 @@ import kotlinx.coroutines.launch
  */
 sealed class NavigationEvent {
     object Back : NavigationEvent()
+
     object Home : NavigationEvent()
+
     object QuizResults : NavigationEvent()
 }
 

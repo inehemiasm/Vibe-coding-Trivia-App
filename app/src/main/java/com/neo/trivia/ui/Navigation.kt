@@ -31,12 +31,10 @@ import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.ui.favorites.FavoritesScreen
 import com.neo.trivia.ui.settings.SettingsScreen
 import com.neo.trivia.ui.stats.StatisticsScreen
-import com.neo.trivia.ui.trivia.CategoriesScreenState
+import com.neo.trivia.ui.trivia.CategorySelectionScreen
 import com.neo.trivia.ui.trivia.CategoryViewModel
 import com.neo.trivia.ui.trivia.QuestionScreen
 import com.neo.trivia.ui.trivia.QuestionViewModel
-import com.neo.trivia.ui.trivia.QuizResultViewModel
-import com.neo.trivia.ui.trivia.CategorySelectionScreen
 import kotlinx.serialization.Serializable
 import timber.log.Timber
 
@@ -45,7 +43,6 @@ data class QuestionScreen(val categoryId: Int, val difficulty: String)
 
 @Serializable
 object QuizResultScreen
-
 
 @Serializable
 sealed class Screen(
@@ -69,26 +66,25 @@ sealed class Screen(
 }
 
 val Screen.icon: ImageVector
-    get() = when (this) {
-        Screen.Home -> Icons.Default.Home
-        Screen.Favorites -> Icons.Default.Favorite
-        Screen.Stats -> Icons.Default.Star
-        Screen.Settings -> Icons.Default.Settings
-        else -> Icons.Default.Home
-    }
+    get() =
+        when (this) {
+            Screen.Home -> Icons.Default.Home
+            Screen.Favorites -> Icons.Default.Favorite
+            Screen.Stats -> Icons.Default.Star
+            Screen.Settings -> Icons.Default.Settings
+            else -> Icons.Default.Home
+        }
 
-
-val items = listOf(
-    Screen.Home,
-    Screen.Favorites,
-    Screen.Stats,
-    Screen.Settings,
-)
+val items =
+    listOf(
+        Screen.Home,
+        Screen.Favorites,
+        Screen.Stats,
+        Screen.Settings,
+    )
 
 @Composable
-fun NavigationApp(
-    navController: NavHostController = rememberNavController()
-) {
+fun NavigationApp(navController: NavHostController = rememberNavController()) {
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
@@ -109,40 +105,41 @@ fun NavigationApp(
                                 launchSingleTop = true
                                 restoreState = true
                             }
-                        }
+                        },
                     )
                 }
             }
-        }
+        },
     ) { innerPadding ->
         NavHost(
             navController = navController,
             startDestination = Screen.Home,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
         ) {
             composable<Screen.Home> { backStackEntry ->
-                val triviaGraphBackStackEntry = remember(backStackEntry) {
-                    navController.getBackStackEntry(Screen.Home)
-                }
+                val triviaGraphBackStackEntry =
+                    remember(backStackEntry) {
+                        navController.getBackStackEntry(Screen.Home)
+                    }
                 val viewModel: CategoryViewModel = hiltViewModel(triviaGraphBackStackEntry)
 
                 CategorySelectionScreen(
                     viewModel = viewModel,
-                    navController = navController
+                    navController = navController,
                 )
             }
 
             composable<QuestionScreen> { backStackEntry ->
                 val questionScreen: QuestionScreen = backStackEntry.toRoute()
-                val triviaGraphBackStackEntry = remember(backStackEntry) {
-                    navController.getBackStackEntry(Screen.Home)
-                }
+                val triviaGraphBackStackEntry =
+                    remember(backStackEntry) {
+                        navController.getBackStackEntry(Screen.Home)
+                    }
                 val categoryViewModel: CategoryViewModel = hiltViewModel(triviaGraphBackStackEntry)
                 val questionViewModel: QuestionViewModel = hiltViewModel(triviaGraphBackStackEntry)
 
-                val categoriesState by categoryViewModel.categoriesState.collectAsStateWithLifecycle()
-                val category = (categoriesState as? CategoriesScreenState.Success)
-                    ?.categories?.find { it.id == questionScreen.categoryId }
+                val state by categoryViewModel.uiState.collectAsStateWithLifecycle()
+                val category = state.categories.find { it.id == questionScreen.categoryId }
 
                 if (category != null) {
                     QuestionScreen(
@@ -151,9 +148,8 @@ fun NavigationApp(
                         difficulty = Difficulty.valueOf(questionScreen.difficulty),
                         category = category,
                         onQuizFinished = { _, _ ->
-                            // Results are saved automatically by QuizResultViewModel
                             navController.navigate(QuizResultScreen)
-                        }
+                        },
                     )
                 }
             }
@@ -161,7 +157,7 @@ fun NavigationApp(
             composable<QuizResultScreen> { backStackEntry ->
                 QuizResultScreen(
                     quizResultId = null,
-                    navController = navController
+                    navController = navController,
                 )
             }
             composable<Screen.Favorites> {
@@ -177,7 +173,7 @@ fun NavigationApp(
                 val detail: Screen.QuizResultDetailScreen = backStackEntry.toRoute()
                 QuizResultScreen(
                     quizResultId = detail.quizResultId,
-                    navController = navController
+                    navController = navController,
                 )
             }
         }

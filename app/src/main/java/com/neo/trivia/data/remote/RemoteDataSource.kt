@@ -25,7 +25,7 @@ interface RemoteDataSource {
     fun getQuestions(
         amount: Int,
         category: Category?,
-        difficulty: Difficulty
+        difficulty: Difficulty,
     ): Flow<Result<List<Question>>>
 
     /**
@@ -38,7 +38,7 @@ interface RemoteDataSource {
     suspend fun getQuestionsSync(
         amount: Int,
         category: Category?,
-        difficulty: Difficulty
+        difficulty: Difficulty,
     ): Result<List<Question>>
 
     /**

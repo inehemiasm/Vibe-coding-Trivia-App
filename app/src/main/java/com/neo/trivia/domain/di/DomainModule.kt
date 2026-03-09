@@ -1,6 +1,5 @@
 package com.neo.trivia.domain.di
 
-import com.neo.trivia.data.database.TriviaDatabase
 import com.neo.trivia.domain.repository.TriviaRepository
 import dagger.Module
 import dagger.Provides
@@ -11,7 +10,6 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 object DomainModule {
-
     @Provides
     @Singleton
     fun provideGetQuestionsUseCase(repository: TriviaRepository): com.neo.trivia.domain.usecase.GetQuestionsUseCase {

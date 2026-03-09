@@ -1,6 +1,7 @@
 package com.neo.trivia.ui.trivia
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -32,7 +33,7 @@ import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.domain.model.Question
 import com.neo.trivia.ui.Components
-import timber.log.Timber
+import kotlinx.coroutines.flow.collectLatest
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,21 +42,21 @@ fun QuestionScreen(
     navController: NavController,
     category: Category,
     difficulty: Difficulty,
-    onQuizFinished: (List<Question>, Int) -> Unit
+    onQuizFinished: (List<Question>, Int) -> Unit,
 ) {
-    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Load questions when entering the screen
     LaunchedEffect(category, difficulty) {
-        viewModel.getQuestions(10, category, difficulty)
+        viewModel.onIntent(QuestionIntent.LoadQuestions(10, category, difficulty))
     }
 
-    // Navigate to results when quiz is finished
-    LaunchedEffect(uiState) {
-        if (uiState is TriviaUiState.Finished) {
-            val questions = viewModel.currentQuestions.value
-            val score = viewModel.score.value
-            onQuizFinished(questions, score)
+    LaunchedEffect(Unit) {
+        viewModel.effect.collectLatest { effect ->
+            when (effect) {
+                is QuestionUiEffect.NavigateToResults -> {
+                    onQuizFinished(effect.questions, effect.score)
+                }
+            }
         }
     }
 
@@ -67,43 +68,41 @@ fun QuestionScreen(
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back"
+                            contentDescription = "Back",
                         )
                     }
-                }
+                },
             )
-        }
+        },
     ) { paddingValues ->
-        Timber.d("Testing1: State: $uiState")
-
-        when (val state = uiState) {
-            is TriviaUiState.Loading, TriviaUiState.Initial -> {
+        Box(modifier = Modifier.padding(paddingValues)) {
+            if (state.isLoading) {
                 Column(
                     modifier = Modifier.fillMaxSize(),
                     horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
+                    verticalArrangement = Arrangement.Center,
                 ) {
                     CircularProgressIndicator()
                 }
-            }
-
-            is TriviaUiState.Success -> {
+            } else if (state.error != null) {
+                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                    Text(state.error!!)
+                }
+            } else {
                 val questions = state.questions
-
-                val selectedQuestionIndex by viewModel.currentQuestionIndex.collectAsStateWithLifecycle()
-                val currentQuestion = questions.getOrNull(selectedQuestionIndex)
+                val currentQuestion = questions.getOrNull(state.currentQuestionIndex)
 
                 if (currentQuestion != null) {
                     Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(paddingValues)
-                            .padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
+                        modifier =
+                            Modifier
+                                .fillMaxSize()
+                                .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
                     ) {
                         Text(
-                            text = stringResource(R.string.quiz_question_count, selectedQuestionIndex + 1, questions.size),
-                            style = MaterialTheme.typography.headlineSmall
+                            text = stringResource(R.string.quiz_question_count, state.currentQuestionIndex + 1, questions.size),
+                            style = MaterialTheme.typography.headlineSmall,
                         )
 
                         Spacer(modifier = Modifier.height(32.dp))
@@ -111,7 +110,7 @@ fun QuestionScreen(
                         Text(
                             text = currentQuestion.question,
                             style = MaterialTheme.typography.titleLarge,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))
@@ -123,19 +122,14 @@ fun QuestionScreen(
                                 text = answer,
                                 selected = false,
                                 onClick = {
-                                    viewModel.onAnswerSelected(index)
+                                    viewModel.onIntent(QuestionIntent.SelectAnswer(index))
                                 },
-                                modifier = Modifier.fillMaxWidth()
+                                modifier = Modifier.fillMaxWidth(),
                             )
                         }
                     }
                 }
             }
-
-            is TriviaUiState.Error -> {
-                // Handle error state
-            }
-            else -> {}
         }
     }
 }

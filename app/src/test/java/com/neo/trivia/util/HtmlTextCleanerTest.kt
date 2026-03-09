@@ -1,10 +1,9 @@
 package com.neo.trivia.util
 
+import org.junit.Assert.assertEquals
 import org.junit.Test
-import org.junit.Assert.*
 
 class HtmlTextCleanerTest {
-
     @Test
     fun testCleanHtmlTextWithHtmlTags() {
         val input = "<p>This is a <b>test</b> question</p>"

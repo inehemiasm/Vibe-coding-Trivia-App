@@ -13,11 +13,13 @@ import com.neo.trivia.data.database.entity.QuizResultEntity
 @Database(
     entities = [QuestionEntity::class, FavoriteEntity::class, QuizResultEntity::class],
     version = 4,
-    exportSchema = false
+    exportSchema = false,
 )
 @TypeConverters(Converters::class)
 abstract class TriviaDatabase : RoomDatabase() {
     abstract fun questionDao(): QuestionDao
+
     abstract fun favoriteDao(): FavoriteDao
+
     abstract fun quizResultDao(): QuizResultDao
 }

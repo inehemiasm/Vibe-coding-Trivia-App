@@ -7,10 +7,12 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class GetFavoriteQuestionsUseCase @Inject constructor(
-    private val repository: TriviaRepository
-) {
-    operator fun invoke(): Flow<List<Question>> {
-        return repository.getFavoriteQuestions()
+class GetFavoriteQuestionsUseCase
+    @Inject
+    constructor(
+        private val repository: TriviaRepository,
+    ) {
+        operator fun invoke(): Flow<List<Question>> {
+            return repository.getFavoriteQuestions()
+        }
     }
-}

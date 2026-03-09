@@ -38,107 +38,107 @@ import com.neo.trivia.ui.QuestionScreen
 @Composable
 fun CategorySelectionScreen(
     navController: NavController,
-    viewModel: CategoryViewModel = hiltViewModel()
+    viewModel: CategoryViewModel = hiltViewModel(),
 ) {
+    val state by viewModel.uiState.collectAsStateWithLifecycle()
+
     LaunchedEffect(Unit) {
-        viewModel.loadCategories()
+        viewModel.onIntent(CategoryIntent.LoadCategories)
     }
-    val categoriesState by viewModel.categoriesState.collectAsStateWithLifecycle()
+
     var selectedCategory by remember { mutableStateOf<Category?>(null) }
     var selectedDifficulty by remember { mutableStateOf<Difficulty?>(null) }
     val difficulties = Difficulty.entries
 
-    when (val state = categoriesState) {
-        is CategoriesScreenState.Loading -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator()
-            }
+    if (state.isLoading) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            CircularProgressIndicator()
         }
-
-        is CategoriesScreenState.Success -> {
-            Column(
-                modifier = Modifier
+    } else if (state.error != null) {
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Text(state.error!!)
+        }
+    } else {
+        Column(
+            modifier =
+                Modifier
                     .fillMaxSize()
-                    .padding(16.dp)
+                    .padding(16.dp),
+        ) {
+            Text("Categories", style = MaterialTheme.typography.headlineSmall)
+            Spacer(modifier = Modifier.height(16.dp))
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(2),
+                modifier = Modifier.weight(1f),
             ) {
-                Text("Categories", style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(16.dp))
-                LazyVerticalGrid(
-                    columns = GridCells.Fixed(2),
-                    modifier = Modifier.weight(1f)
-                ) {
-                    items(state.categories) { category ->
-                        CategoryCard(
-                            categoryName = category.name,
-                            onCategoryClick = { selectedCategory = category },
-                            border = if (selectedCategory == category) {
+                items(state.categories) { category ->
+                    CategoryCard(
+                        categoryName = category.name,
+                        onCategoryClick = { selectedCategory = category },
+                        border =
+                            if (selectedCategory == category) {
                                 BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
                             } else {
                                 null
-                            }
-                        )
-                    }
+                            },
+                    )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
-                Text("Difficulty", style = MaterialTheme.typography.headlineSmall)
-                Spacer(modifier = Modifier.height(16.dp))
+            Text("Difficulty", style = MaterialTheme.typography.headlineSmall)
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceEvenly
-                ) {
-                    difficulties.forEach { difficulty ->
-                        Button(
-                            onClick = { selectedDifficulty = difficulty },
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = if (selectedDifficulty == difficulty) {
-                                    MaterialTheme.colorScheme.primary
-                                } else {
-                                    MaterialTheme.colorScheme.surface
-                                }
-                            )
-                        ) {
-                            Text(
-                                text = difficulty.name,
-                                color = if (selectedDifficulty == difficulty) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceEvenly,
+            ) {
+                difficulties.forEach { difficulty ->
+                    Button(
+                        onClick = { selectedDifficulty = difficulty },
+                        colors =
+                            ButtonDefaults.buttonColors(
+                                containerColor =
+                                    if (selectedDifficulty == difficulty) {
+                                        MaterialTheme.colorScheme.primary
+                                    } else {
+                                        MaterialTheme.colorScheme.surface
+                                    },
+                            ),
+                    ) {
+                        Text(
+                            text = difficulty.name,
+                            color =
+                                if (selectedDifficulty == difficulty) {
                                     MaterialTheme.colorScheme.onPrimary
                                 } else {
                                     MaterialTheme.colorScheme.onSurface
-                                }
+                                },
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Button(
+                onClick = {
+                    selectedCategory?.let { category ->
+                        selectedDifficulty?.let { difficulty ->
+                            navController.navigate(
+                                QuestionScreen(
+                                    categoryId = category.id,
+                                    difficulty = difficulty.name,
+                                ),
                             )
                         }
                     }
-                }
-
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(
-                    onClick = {
-                        selectedCategory?.let { category ->
-                            selectedDifficulty?.let { difficulty ->
-                                navController.navigate(
-                                    QuestionScreen(
-                                        categoryId = category.id,
-                                        difficulty = difficulty.name
-                                    )
-                                )
-                            }
-                        }
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = selectedCategory != null && selectedDifficulty != null
-                ) {
-                    Text("Start Quiz")
-                }
-            }
-        }
-
-        is CategoriesScreenState.Error -> {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text(state.message)
+                },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = selectedCategory != null && selectedDifficulty != null,
+            ) {
+                Text("Start Quiz")
             }
         }
     }

@@ -2,8 +2,8 @@ package com.neo.trivia.data.local
 
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Question
-import com.neo.trivia.domain.model.QuizResult
 import com.neo.trivia.domain.model.QuizHistory
+import com.neo.trivia.domain.model.QuizResult
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -11,13 +11,21 @@ import kotlinx.coroutines.flow.Flow
  */
 interface LocalDataSource {
     suspend fun insertQuestions(questions: List<Question>)
+
     fun getAllQuestions(): Flow<List<Question>>
+
     fun searchQuestions(query: String): Flow<List<Question>>
+
     suspend fun clearCache()
+
     suspend fun isFavorite(questionId: String): Boolean
+
     suspend fun toggleFavorite(questionId: String): Boolean
+
     fun getFavoriteQuestions(): Flow<List<Question>>
+
     suspend fun removeFavorite(questionId: String)
+
     suspend fun insertFavorite(questionId: String)
 
     /**
@@ -37,7 +45,7 @@ interface LocalDataSource {
         score: Int,
         totalQuestions: Int,
         questions: List<Question>,
-        quizResults: List<QuizResult>
+        quizResults: List<QuizResult>,
     )
 
     suspend fun getQuizResultById(id: String): Pair<List<Question>, List<QuizResult>>?

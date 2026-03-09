@@ -3,13 +3,11 @@ package com.neo.design.cards
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CheckboxDefaults.colors
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
@@ -27,11 +25,12 @@ fun AppCard(
     clickable: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val elevationModifier = if (clickable) {
-        CardDefaults.outlinedCardColors()
-    } else {
-        colors()
-    }
+    val elevationModifier =
+        if (clickable) {
+            CardDefaults.outlinedCardColors()
+        } else {
+            colors()
+        }
 
     if (onClick != null) {
         Card(
@@ -40,13 +39,14 @@ fun AppCard(
             shape = shape,
             elevation = CardDefaults.elevatedCardElevation(),
 //        colors = if (clickable && onClick != null) elevationModifier else colors,
-            border = border
+            border = border,
         ) {
             androidx.compose.foundation.layout.Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontalPadding, verticalPadding),
-                content = content
+                modifier =
+                    Modifier
+                        .fillMaxWidth()
+                        .padding(horizontalPadding, verticalPadding),
+                content = content,
             )
         }
     }

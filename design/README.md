@@ -26,7 +26,9 @@ design/src/main/java/com/neo/design/
 │   └── LoadingButton.kt        # Button with loading state
 ├── cards/
 │   ├── Card.kt                 # Base card component
-│   └── StatCard.kt             # Statistics card component
+│   ├── CategoryCard.kt         # Card for category selection
+│   ├── StatCard.kt             # Statistics card component
+│   └── AppCard.kt              # General purpose app card
 └── tokens/
     ├── spacing.kt              # Spacing design tokens
     └── cornerRadius.kt         # Corner radius tokens
@@ -87,32 +89,6 @@ AppIcon(
     size = IconSize.Large,
     tint = MaterialTheme.colorScheme.primary
 )
-
-// Navigation icons
-TriviaIcons.Home
-TriviaIcons.Back
-TriviaIcons.Close
-TriviaIcons.Search
-TriviaIcons.Settings
-
-// Action icons
-TriviaIcons.Favorite
-TriviaIcons.FavoriteBorder
-TriviaIcons.Info
-TriviaIcons.Check
-TriviaIcons.Error
-
-// Quiz icons
-TriviaIcons.Play
-TriviaIcons.Pause
-TriviaIcons.Replay
-TriviaIcons.Next
-TriviaIcons.Previous
-
-// UI icons
-TriviaIcons.More
-TriviaIcons.Expand
-TriviaIcons.Collapse
 ```
 
 ### Icon Sizes
@@ -177,18 +153,6 @@ OutlinedButton(
 )
 ```
 
-### Loading Button
-
-```kotlin
-import com.neo.design.buttons.LoadingButton
-
-LoadingButton(
-    text = "Loading...",
-    onClick = { /* your action */ },
-    enabled = false
-)
-```
-
 ## Card System
 
 ### Base Card
@@ -198,9 +162,7 @@ import com.neo.design.cards.AppCard
 
 AppCard(
     modifier = Modifier.fillMaxWidth(),
-    onClick = { /* your action */ },
-    horizontalPadding = 16.dp,
-    verticalPadding = 16.dp
+    onClick = { /* your action */ }
 ) {
     Text("Card content")
 }
@@ -219,31 +181,24 @@ StatCard(
 )
 ```
 
-## Design Tokens
-
-### Spacing
+### Category Card
 
 ```kotlin
-import com.neo.design.tokens.Spacing
+import com.neo.design.cards.CategoryCard
 
-Spacing.xs  // 4.dp
-Spacing.sm  // 8.dp
-Spacing.md  // 16.dp
-Spacing.lg  // 24.dp
-Spacing.xl  // 32.dp
-Spacing.xxl // 48.dp
+CategoryCard(
+    categoryName = "Science",
+    onCategoryClick = { /* select category */ }
+)
 ```
 
-### Corner Radius
+## UI State Management (MVI Integration)
 
-```kotlin
-import com.neo.design.tokens.CornerRadius
+While the `design` module is primarily for UI components, these components are designed to work seamlessly with the app's **MVI (Model-View-Intent)** architecture.
 
-CornerRadius.sm  // 8.dp
-CornerRadius.md  // 12.dp
-CornerRadius.lg  // 16.dp
-CornerRadius.xl  // 20.dp
-```
+- **Stateless Components**: All design system components are stateless and rely on parameters passed from the UI layer.
+- **Predictable Updates**: Components respond to changes in the `UiState` emitted by ViewModels.
+- **Intent Handling**: Click listeners in components (like `onClick`) are used to trigger `UiIntent` calls in the presentation layer.
 
 ## Integration with App Module
 
@@ -254,10 +209,9 @@ The design module is automatically integrated with the app module. To use design
    import com.neo.design.buttons.PrimaryButton
    import com.neo.design.cards.AppCard
    import com.neo.design.icons.AppIcon
-   import com.neo.design.typography.Typography
    ```
 
-2. Use components directly in your screens
+2. Use components directly in your screens.
 
 3. Update `Theme.kt` to use design typography:
    ```kotlin
@@ -269,35 +223,12 @@ The design module is automatically integrated with the app module. To use design
 
 ## Best Practices
 
-1. **Consistency**: Always use design system components for UI elements
-2. **Typography**: Use appropriate typography tokens based on content hierarchy
-3. **Icons**: Use TriviaIcons instead of raw Material icons for consistency
-4. **Spacing**: Use Spacing tokens for consistent spacing between elements
-5. **Buttons**: Choose the appropriate button variant based on the action's importance
-6. **Dark/Light Mode**: Design system components automatically adapt to the current theme
-
-## Extending the Design System
-
-### Adding New Icons
-
-Add new icons to `TriviaIcons` object in `icons/Icons.kt`:
-
-```kotlin
-object TriviaIcons {
-    // ... existing icons
-
-    // Add your new icon
-    val NewIcon = Icons.Default.YourIcon
-}
-```
-
-### Adding New Button Styles
-
-Extend `ButtonStyle` enum and add corresponding component in `buttons/Button.kt`.
-
-### Adding New Typography Styles
-
-Add new tokens to `TypographyToken` enum in `typography/tokens.kt`.
+1. **Consistency**: Always use design system components for UI elements.
+2. **Typography**: Use appropriate typography tokens based on content hierarchy.
+3. **Icons**: Use `TriviaIcons` instead of raw Material icons for consistency.
+4. **Spacing**: Use `Spacing` tokens for consistent spacing between elements.
+5. **Buttons**: Choose the appropriate button variant based on the action's importance.
+6. **Dark/Light Mode**: Design system components automatically adapt to the current theme.
 
 ## Dependencies
 
