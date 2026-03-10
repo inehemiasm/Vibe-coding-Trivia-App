@@ -1,121 +1,85 @@
-# Quick Start Guide
+# Quick Start Guide 🚀
 
 ## Prerequisites
 
-1. **Android Studio**: Version Koala (2023.1.1) or later
-2. **Java JDK**: Version 11 or higher
-3. **Gradle**: Version 8.0 or higher
+1.  **Android Studio**: Version Ladybug (2024.2.1) or later.
+2.  **Java JDK**: Version 17 or higher.
+3.  **Gradle**: Version 8.0 or higher.
 
 ## Installation Steps
 
 ### 1. Open the Project
-
 ```bash
 # Navigate to the project directory
 cd C:\Users\nehem\AndroidStudioProjects\TriviaApp
 
-# Open in Android Studio
-# File > Open > Select this directory
+# Open in Android Studio: File > Open > Select this directory
 ```
 
 ### 2. Sync Gradle
-
+Use Android Studio's **Sync Project with Gradle Files** button or run:
 ```bash
-# Use Android Studio's Sync Gradle button
-# Or run from terminal:
 ./gradlew build --refresh-dependencies
 ```
 
-### 3. Build the App
+### 3. Build & Run
+1.  Connect an Android device or start an emulator.
+2.  Click **Run** (Green play button) in Android Studio.
+3.  The app will build, install, and launch.
 
-```bash
-# Build the project
-./gradlew assembleDebug
+---
 
-# Or use Android Studio's Build > Rebuild Project
-```
+## First Run Experience
 
-### 4. Run the App
+1.  **Home Screen**: Browse through a vibrant grid of trivia categories.
+2.  **Background Sync**: On the first run, the app will automatically start downloading 20+ questions for each category to enable **Offline Mode**.
+3.  **Select Category**: Tap a category (e.g., Science, History, Music) to see it highlighted in the theme's accent color.
+4.  **Pick Difficulty**: Choose between Easy, Medium, or Hard.
+5.  **Start Quiz**: Tap "Start Quiz" to begin.
+6.  **Review Results**: After 10 questions, you'll see a detailed breakdown of your performance, including which questions you got wrong and the correct answers.
 
-1. Connect an Android device or start an emulator
-2. Click "Run" in Android Studio
-3. The app will install and launch
+---
 
-## First Run
+## Key Features Guide
 
-When you open the app:
+### 📶 Offline Mode
+The app is designed to work without internet. Once the initial sync is complete:
+- You can play quizzes even in Airplane Mode.
+- Only categories with cached questions will be visible when offline.
+- Quizzes are randomized locally using SQL for a fresh experience every time.
 
-1. **Trivia Screen**: You'll see the main trivia screen
-2. **Select Category**: Choose from 10 available categories (General Knowledge, Movies, History, etc.)
-3. **Select Question Count**: Choose 10, 20, 30, 40, or 50 questions
-4. **Start Quiz**: Tap the "Start Quiz" button
-5. **Answer Questions**: Select your answers for each question
-6. **View Results**: See your score at the end
-7. **Explore More**: Navigate to Favorites and Statistics screens
+### 🎨 Theming
+The app defaults to the **Playful** theme (Deep Purple & Amber). You can change this in Settings:
+- **Playful**: Classic trivia feel.
+- **Vibrant**: Energetic Orange & Blue.
+- **Ocean**: Modern Teal & Blue.
+- **Sunset**: Warm Purple & Orange.
+- **Mint**: Fresh Green & Teal.
 
-## Features Overview
+### ⭐ Favorites & History
+- **Favorites**: Long-press or tap the favorite icon during a quiz to save a question.
+- **History**: Check the "Stats" tab to see your past scores and revisit detailed result reviews for every quiz you've played.
 
-### 🎯 Main Trivia Screen
-- Category filtering (10 categories)
-- Question count selection (10, 20, 30, 40, 50)
-- Real-time question display
-- Answer checking
-- Score tracking
-- Navigation to results
-
-### ⭐ Favorites Screen
-- View saved favorite questions
-- Search through favorites
-- Toggle favorite status
-- Beautiful card-based UI
-
-### 📊 Statistics Screen
-- Total questions count
-- Favorite questions count
-- Usage information
+---
 
 ## Troubleshooting
 
-### Java Not Found
+### Icon Not Updating
+If you see the old Android logo on the home screen:
+1.  Uninstall the app from your device.
+2.  In Android Studio: **Build > Clean Project**.
+3.  Run the app again.
 
-```bash
-# Check Java installation
-java -version
+### Offline Quiz has < 10 Questions
+This usually means the initial sync hasn't finished or was interrupted.
+- Stay online for a minute to let the `SyncQuestionsUseCase` finish.
+- The app will automatically "fill" the quiz with random questions from other categories if your selected one is short on data.
 
-# If not found, set JAVA_HOME environment variable
-# Windows:
-set JAVA_HOME=C:\Program Files\Java\jdk-11
-set PATH=%JAVA_HOME%\bin;%PATH%
+---
 
-# Or use Android Studio's bundled JDK
-```
-
-### Gradle Sync Issues
-
-```bash
-# Clean Gradle cache
-./gradlew clean
-
-# Delete .gradle folder
-rm -rf .gradle
-# Or in Windows:
-# Remove .gradle folder manually
-```
-
-### Build Errors
-
-```bash
-# Update dependencies
-./gradlew build --refresh-dependencies
-
-# Check build configuration
-./gradlew tasks
-```
-
-## Development Tips
+## Development Reference
 
 ### Running Tests
-
 ```bash
 # Unit tests
 ./gradlew test
@@ -124,90 +88,7 @@ rm -rf .gradle
 ./gradlew connectedAndroidTest
 ```
 
-### Creating New Use Cases
-
-1. Create file in `domain/usecase/`
-2. Implement use case logic
-3. Add DI provider in `domain/di/DomainModule.kt`
-4. Use in ViewModel
-
-### Adding New Categories
-
-1. Add to `Category` enum in both:
-   - `data/api/Category.kt`
-   - `domain/model/Category.kt`
-2. The API will automatically handle category filtering
-
-### Modifying Database
-
-```kotlin
-// Add new field to entity
-@Entity(tableName = "new_table")
-data class NewEntity(
-    @PrimaryKey val id: String,
-    val newField: String
-)
-
-// Add new field to DAO
-@Query("SELECT * FROM new_table")
-fun getAllNewItems(): Flow<List<NewEntity>>
-```
-
-## Project Structure Reference
-
-```
-TriviaApp/
-├── app/
-│   └── src/main/java/com/neo/trivia/
-│       ├── data/          # Data layer
-│       │   ├── api/       # API interfaces and models
-│       │   ├── database/  # Room database entities & DAOs
-│       │   ├── di/        # Data DI module
-│       │   ├── model/     # Data models
-│       │   └── repository/# Repository implementation
-│       ├── domain/        # Domain layer
-│       │   ├── di/        # Domain DI module
-│       │   ├── model/     # Domain models
-│       │   ├── repository/# Repository interface
-│       │   └── usecase/   # Business logic use cases
-│       ├── ui/            # Presentation layer
-│       │   ├── components/# Reusable UI components
-│       │   ├── favorites/ # Favorites screen
-│       │   ├── navigation/# Navigation setup
-│       │   ├── stats/     # Statistics screen
-│       │   ├── theme/     # Theme configuration
-│       │   └── trivia/    # Trivia screen
-│       └── MainActivity.kt
-├── gradle/
-│   └── libs.versions.toml  # Dependency versions
-└── README.md              # Project documentation
-```
-
-## Next Steps for Customization
-
-1. **Add Firebase**: Implement multiplayer features
-2. **Add Sounds**: Integrate sound effects for correct/incorrect answers
-3. **Add Animations**: Enhance UI with Compose animations
-4. **Add Dark Mode**: Customize theme colors
-5. **Add Leaderboards**: Implement Firebase Realtime Database for leaderboards
-6. **Add Categories**: Add more trivia categories from the API
-7. **Add Testing**: Write unit and integration tests
-
-## Support
-
-For issues or questions:
-- Check `IMPLEMENTATION_SUMMARY.md` for detailed information
-- Review the code comments in each file
-- Check Android Studio's built-in documentation
-
-## API Reference
-
-Open Trivia DB API:
-- URL: https://opentdb.com/api.php
-- Documentation: https://opentdb.com/api_config.php
-
-## License
-
-This project is for educational purposes.
+### Updating Icons
+Launcher icons are located in `app/src/main/res/drawable/ic_launcher_foreground.xml` and `ic_launcher_background.xml`. The adaptive icon definition is in `app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml`.
 
 Happy coding! 🎮

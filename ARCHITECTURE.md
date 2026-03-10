@@ -1,121 +1,72 @@
-# ViewModel Architecture
+# Trivia App: Architecture & Development Guide 🏆
 
-## Principle: Unidirectional Data Flow with MVI
+This document outlines the architectural principles, patterns, and best practices used in the Trivia App to ensure it is robust, offline-capable, and easy to maintain.
 
-This Trivia app follows the **MVI (Model-View-Intent)** architectural pattern. Each screen has a dedicated ViewModel that extends `BaseViewModel`, ensuring a consistent and predictable state management system.
+---
 
-## Core Components
+## 1. Clean Architecture + MVI
+
+The app is built using **Clean Architecture** with a strict separation of concerns across three layers:
+- **Data Layer**: Retrofit for API, Room for local caching, and a Repository to orchestrate them.
+- **Domain Layer**: Pure Kotlin business logic (Use Cases) and repository interfaces.
+- **Presentation Layer**: Jetpack Compose and ViewModels following the **MVI (Model-View-Intent)** pattern.
+
+### Why MVI?
+Unidirectional Data Flow (UDF) ensures that the UI state is predictable. Every change in the UI is a result of a specific `UiIntent` being processed by the ViewModel, leading to a new `UiState`.
+
+---
+
+## 2. Presentation Layer (MVI)
 
 ### BaseViewModel
 All ViewModels inherit from `BaseViewModel<S : UiState, I : UiIntent, E : UiEffect>`.
 - **UiState**: Represents the entire state of the screen at any given time.
-- **UiIntent**: Represents user actions or events that trigger a state change.
-- **UiEffect**: Represents one-time side effects like navigation, showing a toast, or playing a sound.
+- **UiIntent**: User actions or events that trigger a state change.
+- **UiEffect**: One-time side effects like navigation or showing a snackbar.
+
+### Current ViewModels
+1. **CategoryViewModel**: Manages category selection, handles **Offline Sync** triggers, and reactively filters categories based on cached data.
+2. **QuestionViewModel**: Manages the quiz session. Handles **Hybrid Sourcing** (Remote -> Local fallback) and tracks scoring.
+3. **QuizResultViewModel**: Displays results and manages history review.
+4. **FavoritesViewModel**: Manages favorite questions streamed from the database.
+5. **StatisticsViewModel**: Aggregates performance metrics from quiz history.
 
 ---
 
-## Current ViewModels
+## 3. Data Layer & Offline-First Strategy 📶
 
-### 1. CategoryViewModel
-**Purpose:** Manages the category selection screen (`CategorySelectionScreen`).
+The app is designed to be fully functional without an internet connection.
 
-**Responsibilities:**
-- Load available quiz categories from the use case.
-- Handle category selection and difficulty configuration.
+### Implementation:
+- **Proactive Sync**: The `SyncQuestionsUseCase` runs in the background when categories are loaded, downloading 20+ questions per category.
+- **Hybrid Repository**: The repository always attempts a network fetch first. If it fails, it seamlessly falls back to the local Room database.
+- **Smart Filtering**: The home screen reactively filters to show only categories that have cached questions when the user is offline.
 
-**MVI Definition:**
-- **State**: `CategoryUiState` (loading, list of categories, error message).
-- **Intents**: `LoadCategories`.
-- **Effects**: None.
-
-**Location:** `app/src/main/java/com/neo/trivia/ui/trivia/CategoryViewModel.kt`
+### Data Integrity & Persistence 💾
+- **Unique Question Hashing**: To prevent collisions, we generate unique IDs for questions based on a hash of their text.
+- **SQL Priority Fallback**: Our `QuestionDao` uses a priority-based query. It prioritizes the selected category but will "fill up" the quiz to 10 questions using random data from other categories if the chosen one is short on local data.
 
 ---
 
-### 2. QuestionViewModel
-**Purpose:** Manages the active quiz session (`QuestionScreen`).
+## 4. UI & Design System 🎨
 
-**Responsibilities:**
-- Load questions based on selected category and difficulty.
-- Track progress, score, and individual answer results.
-- Save quiz results to the database upon completion.
-
-**MVI Definition:**
-- **State**: `QuestionUiState` (questions, current index, score, results, loading/error status).
-- **Intents**: `LoadQuestions`, `SelectAnswer`.
-- **Effects**: `NavigateToResults` (triggered when the quiz finishes).
-
-**Location:** `app/src/main/java/com/neo/trivia/ui/trivia/QuestionViewModel.kt`
+- **Centralized Tokens**: All colors, spacing, and corner radii are defined as tokens in the `:design` module. 
+- **Theming**: 5 distinct theme modes with full dark mode support. Always use `MaterialTheme.colorScheme` instead of hardcoded colors.
+- **Cohesive Components**: Shared components like `AppCard` and `PrimaryButton` ensure a consistent look and feel.
 
 ---
 
-### 3. QuizResultViewModel
-**Purpose:** Manages the results display and history review (`QuizResultScreen`).
+## 5. Navigation & Coding Standards
 
-**Responsibilities:**
-- Fetch specific quiz results by ID or the latest saved session.
-- Provide functionality to reset the quiz state for a retake.
-
-**MVI Definition:**
-- **State**: `QuizResultUiState` (final score, results breakdown, loading status).
-- **Intents**: `LoadSavedResults`, `LoadResultById`, `ResetQuiz`.
-- **Effects**: None.
-
-**Location:** `app/src/main/java/com/neo/trivia/ui/trivia/QuizResultViewModel.kt`
+- **Type-Safe Navigation**: Uses Jetpack Compose Navigation with type-safe routes.
+- **Backstack Management**: Quiz screens are popped from the backstack (`inclusive = true`) upon completion so that "Back" from the results screen leads Home.
+- **Dependency Injection**: 100% Hilt-based. Interface-based injection is used for Repositories and DataSources to facilitate testing.
+- **Compose Best Practices**: Use `collectAsStateWithLifecycle()` for safe state observation.
 
 ---
 
-### 4. FavoritesViewModel
-**Purpose:** Manages the user's favorite questions (`FavoritesScreen`).
+## 6. Key Benefits
 
-**Responsibilities:**
-- Stream favorite questions from the local database.
-- Handle toggling the favorite status of a question.
-
-**MVI Definition:**
-- **State**: `FavoritesUiState` (list of favorite questions, loading status).
-- **Intents**: `LoadFavorites`, `ToggleFavorite`.
-- **Effects**: None.
-
-**Location:** `app/src/main/java/com/neo/trivia/ui/favorites/FavoritesViewModel.kt`
-
----
-
-### 5. StatisticsViewModel
-**Purpose:** Manages the user's overall performance metrics (`StatisticsScreen`).
-
-**Responsibilities:**
-- Aggregate data from quiz history to display total questions and performance.
-- Provide a list of recent quiz attempts.
-
-**MVI Definition:**
-- **State**: `StatisticsUiState` (quiz history list, total question count, loading status).
-- **Intents**: `LoadStatistics`.
-- **Effects**: None.
-
-**Location:** `app/src/main/java/com/neo/trivia/ui/stats/StatisticsViewModel.kt`
-
----
-
-## Data Flow (MVI Pattern)
-
-1. **User Action**: User interacts with the UI (e.g., clicks an answer).
-2. **Intent**: The UI calls `viewModel.onIntent(Intent)`.
-3. **State Change**: The ViewModel processes the intent in `handleIntent`, updates the `UiState` using `setState { ... }`.
-4. **UI Update**: The Compose screen observes `viewModel.uiState` and recomposes automatically.
-5. **Side Effect**: If an action requires a one-time event (like navigation), the ViewModel calls `sendEffect(Effect)`.
-
----
-
-## Navigation Pattern
-
-Navigation uses Jetpack Compose Navigation with type-safe routes. When transitioning between screens in a quiz flow, we pass unique identifiers (like `categoryId` or `quizResultId`) and fetch necessary data in the destination ViewModel to ensure state consistency.
-
----
-
-## Key Benefits of MVI
-
-1. **Single Source of Truth**: The state is immutable and held in one place.
-2. **Predictability**: Every UI change is a result of a specific intent.
-3. **Debuggability**: Clear separation of user actions and state transitions makes it easier to trace issues.
-4. **Testability**: Business logic is isolated within the `handleIntent` function, which can be tested by asserting state changes against specific intents.
+1. **Predictability**: Every UI change is traceable to an intent.
+2. **Testability**: Business logic is isolated in Use Cases and ViewModel `handleIntent` blocks.
+3. **Resilience**: A robust offline fallback ensures the user experience is never interrupted by connectivity issues.

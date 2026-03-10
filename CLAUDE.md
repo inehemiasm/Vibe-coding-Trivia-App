@@ -1,121 +1,43 @@
-# CLAUDE.md
+# CLAUDE.md - Development Guide
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+## Build & Run Commands
+- Build project: `./gradlew build`
+- Run app: `./gradlew installDebug` (or use Android Studio Run button)
+- Clean project: `./gradlew clean`
+- Run unit tests: `./gradlew test`
+- Run instrumented tests: `./gradlew connectedAndroidTest`
+- Refresh dependencies: `./gradlew build --refresh-dependencies`
 
-## Project Overview
+## Architecture & Layers
+This project follows **Clean Architecture** with **MVI (Model-View-Intent)**:
+- **Presentation (UI)**: Jetpack Compose, ViewModels (extending `BaseViewModel`), StateFlow.
+- **Domain**: Use Cases, Repository interfaces, Domain models (`Question`, `Category`).
+- **Data**: Retrofit (Remote), Room (Local), Repository implementations.
 
-A Trivia application built with Clean Architecture, MVI (Model-View-Intent), Jetpack Compose, Hilt dependency injection, Room database, and Retrofit for API calls.
+## Code Style & Guidelines
+- **Language**: Kotlin 1.9+
+- **Concurrency**: Coroutines & Flow (StateFlow for UI state).
+- **DI**: Hilt (`@Inject`, `@Module`, `@InstallIn`).
+- **UI**: 100% Jetpack Compose with Material 3.
+- **Naming**: 
+    - ViewModels: `[Feature]ViewModel`
+    - UseCases: `[Action][Entity]UseCase`
+    - Components: PascalCase for Composables.
+- **Error Handling**: Use the `Result` sealed class for data operations.
+- **Database**:
+    - Use `OnConflictStrategy.REPLACE` for entities.
+    - Always provide unique IDs (using `question.hashCode()` for questions to avoid collisions).
+- **Offline First**:
+    - Repository should attempt remote fetch first, then fallback to `localDataSource.getRandomQuestionsWithFallback`.
+    - Categories should be filtered via `getCategoriesWithQuestions()` when offline.
 
-## Architecture
+## Design System
+- Resides in the `:design` module.
+- Uses **Tokens** for colors, spacing, and corner radius.
+- Theme configuration is in `app/src/main/java/com/neo/trivia/ui/theme/Theme.kt`.
+- Use `TriviaAppTheme` for all screens to ensure consistent branding.
 
-The app follows Clean Architecture with three distinct layers:
-
-### 1. Presentation Layer (UI)
-- Jetpack Compose for all UI components
-- **MVI Pattern**: ViewModels extend `BaseViewModel` with `UiState`, `UiIntent`, and `UiEffect`.
-- Navigation using Jetpack Compose Navigation with type-safe routes.
-
-### 2. Domain Layer (Business Logic)
-- Domain models (Question, Category) shared between layers.
-- Repository interface defining the contract.
-- Use cases containing pure business logic.
-
-### 3. Data Layer (Infrastructure)
-- Room database for local caching and quiz history.
-- Retrofit API service for fetching questions from Open Trivia DB.
-- Repository implementation orchestrating between data sources.
-
-### Key Architectural Patterns
-
-**MVI Architecture**: Every screen has a single state object (`UiState`). User actions are sent as `UiIntent`. One-time events (navigation, snackbars) are handled via `UiEffect`.
-
-**Repository Pattern**: Data layer implements the repository interface defined in the domain layer.
-
-**Dependency Injection**: Uses Hilt for managing dependencies across all layers.
-
-## Build Commands
-
-### Building
-```bash
-./gradlew assembleDebug       # Build debug APK
-./gradlew clean               # Clean build artifacts
-./gradlew build --build-cache # Build with cache
-```
-
-### Testing
-```bash
-./gradlew test                        # Run unit tests
-./gradlew connectedAndroidTest         # Run instrumented tests
-```
-
-## Project Structure (Key Paths)
-
-- `app/src/main/java/com/neo/trivia/core/`: Base MVI classes (`BaseViewModel`, etc.)
-- `app/src/main/java/com/neo/trivia/ui/`: Presentation layer (Screens and ViewModels)
-- `app/src/main/java/com/neo/trivia/domain/`: Domain layer (Models, Use Cases, Repository interfaces)
-- `app/src/main/java/com/neo/trivia/data/`: Data layer (API, Database, Repository implementations)
-- `design/`: Design system module (Shared UI components)
-
-## Development Guidelines
-
-### Adding New Features
-
-1. **State & Intent**: Define `UiState`, `UiIntent`, and `UiEffect` in the ViewModel file.
-2. **ViewModel**: Extend `BaseViewModel`, implement `handleIntent(intent: UiIntent)`.
-3. **Screen**: Observe `uiState` using `collectAsStateWithLifecycle()`. Send intents using `viewModel.onIntent(Intent)`.
-4. **Effects**: Use `LaunchedEffect` to observe `viewModel.effect`.
-5. **Use Case**: Add new business logic to `domain/usecase/` and provide it in `DomainModule`.
-
-### MVI Example
-
-#### ViewModel Implementation
-```kotlin
-class MyViewModel : BaseViewModel<MyState, MyIntent, MyEffect>(MyState()) {
-    override suspend fun handleIntent(intent: MyIntent) {
-        when (intent) {
-            is MyIntent.Submit -> {
-                // ... logic
-                sendEffect(MyEffect.NavigateToSuccess)
-            }
-        }
-    }
-}
-```
-
-#### Composable Implementation
-```kotlin
-@Composable
-fun MyScreen(viewModel: MyViewModel) {
-    val state by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // Observing Effects
-    LaunchedEffect(Unit) {
-        viewModel.effect.collectLatest { effect ->
-            when (effect) {
-                is MyEffect.NavigateToSuccess -> { /* Navigate */ }
-                is MyEffect.ShowError -> { /* Show Snackbar */ }
-            }
-        }
-    }
-
-    // Sending Intents
-    Button(onClick = { viewModel.onIntent(MyIntent.Submit) }) {
-        Text("Submit")
-    }
-}
-```
-
-## API Reference
-
-Open Trivia DB API:
-- Base URL: `https://opentdb.com/api.php`
-- Category filtering via `category` parameter.
-- No API key required.
-
-## Key Implementation Notes
-
-1. **Unidirectional Data Flow**: State flows down to UI, Intents flow up to ViewModel.
-2. **State Immutability**: Always update state using `setState { copy(...) }`.
-3. **Side Effects**: `UiEffect` should be used for events that aren't part of the persistent UI state (navigation, single-use alerts).
-4. **Reactive Streams**: Use `Flow` for database queries and API results.
-5. **Design System**: Use components from the `:design` module for UI consistency.
+## Common Tasks
+- **Add a Screen**: Create Composable, ViewModel, and add to `NavHost` in `Navigation.kt`.
+- **Add a Database Table**: Define `@Entity`, `@Dao`, update `TriviaDatabase.kt` (increment version), and add to `LocalDataSource`.
+- **Add an Icon**: Place in `res/drawable` and use `Icons.Filled.[Name]` (ensure `material-icons-extended` is in `build.gradle.kts`).
