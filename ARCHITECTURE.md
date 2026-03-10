@@ -10,7 +10,7 @@ This Trivia app follows the **MVI (Model-View-Intent)** architectural pattern. E
 All ViewModels inherit from `BaseViewModel<S : UiState, I : UiIntent, E : UiEffect>`.
 - **UiState**: Represents the entire state of the screen at any given time.
 - **UiIntent**: Represents user actions or events that trigger a state change.
-- **UiEffect**: Represents one-time side effects like navigation, showing a toast, or playing a sound.
+- **UiEffect**: Represents one-time side effects like navigation or showing a snackbar.
 
 ---
 
@@ -21,11 +21,12 @@ All ViewModels inherit from `BaseViewModel<S : UiState, I : UiIntent, E : UiEffe
 
 **Responsibilities:**
 - Load available quiz categories from the use case.
-- Handle category selection and difficulty configuration.
+- **Offline Sync**: Automatically triggers `SyncQuestionsUseCase` to download 20+ questions per category for offline play.
+- **Reactive Cache**: Observes the local database to show only categories with cached questions when offline.
 
 **MVI Definition:**
-- **State**: `CategoryUiState` (loading, list of categories, error message).
-- **Intents**: `LoadCategories`.
+- **State**: `CategoryUiState` (loading, syncing status, list of categories, error).
+- **Intents**: `LoadCategories`, `SyncOfflineData`.
 - **Effects**: None.
 
 **Location:** `app/src/main/java/com/neo/trivia/ui/trivia/CategoryViewModel.kt`
@@ -37,12 +38,14 @@ All ViewModels inherit from `BaseViewModel<S : UiState, I : UiIntent, E : UiEffe
 
 **Responsibilities:**
 - Load questions based on selected category and difficulty.
+- **Hybrid Sourcing**: Fetches from the API but automatically falls back to the local database if offline.
+- **Unique Question Hashing**: Generates unique IDs for questions to prevent collisions and ensure a growing local library.
 - Track progress, score, and individual answer results.
 - Save quiz results to the database upon completion.
 
 **MVI Definition:**
 - **State**: `QuestionUiState` (questions, current index, score, results, loading/error status).
-- **Intents**: `LoadQuestions`, `SelectAnswer`.
+- **Intents**: `LoadQuestions`, `SelectAnswer`, `ResetQuizState`.
 - **Effects**: `NavigateToResults` (triggered when the quiz finishes).
 
 **Location:** `app/src/main/java/com/neo/trivia/ui/trivia/QuestionViewModel.kt`
@@ -109,7 +112,8 @@ All ViewModels inherit from `BaseViewModel<S : UiState, I : UiIntent, E : UiEffe
 
 ## Navigation Pattern
 
-Navigation uses Jetpack Compose Navigation with type-safe routes. When transitioning between screens in a quiz flow, we pass unique identifiers (like `categoryId` or `quizResultId`) and fetch necessary data in the destination ViewModel to ensure state consistency.
+Navigation uses Jetpack Compose Navigation with type-safe routes. 
+- **Backstack Management**: When a quiz is finished, the question screen is popped from the backstack (`inclusive = true`) so that "Back" from the results screen leads to the Home screen, not the last question.
 
 ---
 

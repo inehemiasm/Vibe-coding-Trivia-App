@@ -1,106 +1,64 @@
-# Theme Usage Guide
+# Theme Usage Guide 🎨
 
-The Trivia App supports 4 beautiful color themes with full dark mode support. Theme preferences are persisted locally using `ThemePreferencesManager`.
+## Overview
 
-## Available Themes
+The Trivia App uses a custom Material 3 based theme system with **5 distinct modes**. The design tokens are centralized in the `:design` module to ensure consistency across the main app and any future libraries.
 
-1. **Vibrant** (Default) - Orange + Blue (energetic, fun)
-2. **Ocean** - Teal + Blue (fresh, modern)
-3. **Sunset** - Purple + Orange (warm, engaging)
-4. **Mint** - Green + Teal (fresh, playful)
+## 🎨 Available Theme Modes
 
-## Usage
+1.  **Playful** (Default): Deep Purple & Amber. Built for a classic "Game Show" feel.
+2.  **Vibrant**: Energetic Orange & Blue.
+3.  **Ocean**: Calm Teal & Blue.
+4.  **Sunset**: Warm Purple & Pink.
+5.  **Mint**: Fresh Green & Teal.
 
-### Theme Provider Setup
+All themes automatically support **Dark Mode** with optimized contrast ratios.
 
-In your `MainActivity` or root composable, observe the theme preferences and apply them to `TriviaAppTheme`:
+## 🛠️ Implementation Details
 
-```kotlin
-@Composable
-fun TriviaApp(
-    themePreferencesManager: ThemePreferencesManager
-) {
-    // Observe theme preferences from DataStore
-    val themePrefs by themePreferencesManager.themePreferences.collectAsState(
-        initial = ThemePreferences(ThemeMode.Vibrant, false)
-    )
+### Theme Configuration
+Located in: `app/src/main/java/com/neo/trivia/ui/theme/Theme.kt`
 
-    TriviaAppTheme(
-        darkTheme = themePrefs.isDarkMode,
-        themeMode = themePrefs.themeMode,
-        dynamicColor = false // Set to true to use Android 12+ dynamic colors
-    ) {
-        // App Content (Navigation, etc.)
-    }
-}
-```
-
-### Applying the Theme
-
-The `TriviaAppTheme` composable handles the selection of color schemes based on the provided parameters:
-
+The `TriviaAppTheme` composable takes a `ThemeMode` enum:
 ```kotlin
 @Composable
 fun TriviaAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    themeMode: ThemeMode = ThemeMode.Vibrant,
-    dynamicColor: Boolean = true,
+    themeMode: ThemeMode = ThemeMode.Playful,
     content: @Composable () -> Unit
-) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-        darkTheme -> when (themeMode) {
-            ThemeMode.Vibrant -> VibrantDarkColors
-            ThemeMode.Ocean -> OceanDarkColors
-            ThemeMode.Sunset -> SunsetDarkColors
-            ThemeMode.Mint -> MintDarkColors
-        }
-        else -> when (themeMode) {
-            ThemeMode.Vibrant -> VibrantLightColors
-            ThemeMode.Ocean -> OceanLightColors
-            ThemeMode.Sunset -> SunsetLightColors
-            ThemeMode.Mint -> MintLightColors
-        }
-    }
-
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = DesignTypography,
-        content = content
-    )
-}
+)
 ```
 
-## Theme Switching
-
-### Preferences Manager
-
-Theme changes are saved using `ThemePreferencesManager` (DataStore-based):
-
+### Accessing Colors in UI
+Always use `MaterialTheme.colorScheme` to ensure your UI adapts to the selected theme mode:
 ```kotlin
-// Save preferences
-themePreferencesManager.saveThemePreferences(ThemeMode.Ocean, true)
+Text(
+    text = "Correct!",
+    color = MaterialTheme.colorScheme.primary // Adapts to Purple, Orange, etc.
+)
 ```
 
-### Settings Integration
+## 🏗️ Design System Components (:design module)
 
-The `SettingsScreen` allows users to toggle dark mode and select their preferred theme. When a user interacts with the UI, the `ThemeIntent` (in an MVI setup) should trigger the update in the `ThemePreferencesManager`.
+### 1. Buttons
+- `PrimaryButton`: Full-width, high emphasis.
+- `SecondaryButton`: Medium emphasis.
+- `TertiaryButton`: Low emphasis.
+- `OutlinedButton`: Bordered button.
 
-## Design System Components
+### 2. Cards
+- `AppCard`: Base card with standard elevation and corner radius.
+- `CategoryCard`: Square card with icon and selection state support.
+- `StatCard`: Large icon and value display for statistics.
 
-All components in the `:design` module are theme-aware and use `MaterialTheme.colorScheme` and `MaterialTheme.typography` to ensure consistency across themes.
+### 3. Tokens
+- **Colors**: Defined in `TriviaColors.kt`.
+- **Spacing**: Consistent padding and margin values.
+- **CornerRadius**: Standardized rounding (SM: 8dp, MD: 12dp, LG: 16dp, XL: 20dp).
 
-- **Primary Actions**: Use `MaterialTheme.colorScheme.primary`
-- **Surface Containers**: Use `MaterialTheme.colorScheme.surface` or `surfaceVariant`
-- **Text**: Use `MaterialTheme.colorScheme.onSurface` or `onSurfaceVariant`
+## 🚀 Adding a New Theme
 
-## Customization
-
-To add a new theme:
-1. Define the colors in `design/src/main/java/com/neo/design/tokens/colors.kt`.
-2. Add the new mode to the `ThemeMode` enum in `ui/theme/Theme.kt`.
-3. Create the corresponding `lightColorScheme` and `darkColorScheme` in `Theme.kt`.
-4. Update the `when` expression in `TriviaAppTheme` to include the new theme.
+1.  **Define Colors**: Add a new `ColorScheme` object in `TriviaColors.kt` (design module).
+2.  **Register Mode**: Add the new mode to the `ThemeMode` enum in `Theme.kt`.
+3.  **Map Colors**: Update the `when` block in `TriviaAppTheme` to map the new mode to your colors.
+4.  **Update Settings**: Ensure the settings screen allows users to select the new theme.
