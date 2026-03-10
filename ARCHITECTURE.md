@@ -24,16 +24,75 @@ All ViewModels inherit from `BaseViewModel<S : UiState, I : UiIntent, E : UiEffe
 - **UiIntent**: User actions or events that trigger a state change.
 - **UiEffect**: One-time side effects like navigation or showing a snackbar.
 
-### Current ViewModels
-1. **CategoryViewModel**: Manages category selection, handles **Offline Sync** triggers, and reactively filters categories based on cached data.
-2. **QuestionViewModel**: Manages the quiz session. Handles **Hybrid Sourcing** (Remote -> Local fallback) and tracks scoring.
-3. **QuizResultViewModel**: Displays results and manages history review.
-4. **FavoritesViewModel**: Manages favorite questions streamed from the database.
-5. **StatisticsViewModel**: Aggregates performance metrics from quiz history.
+### Data Flow (MVI Pattern)
+1. **User Action**: User interacts with the UI (e.g., clicks an answer).
+2. **Intent**: The UI calls `viewModel.onIntent(Intent)`.
+3. **State Change**: The ViewModel processes the intent in `handleIntent`, updates the `UiState` using `setState { ... }`.
+4. **UI Update**: The Compose screen observes `viewModel.uiState` and recomposes automatically.
+5. **Side Effect**: If an action requires a one-time event (like navigation), the ViewModel calls `sendEffect(Effect)`.
 
 ---
 
-## 3. Data Layer & Offline-First Strategy 📶
+## 3. Current ViewModels
+
+### 1. CategoryViewModel
+**Purpose:** Manages the category selection screen (`CategorySelectionScreen`).
+**Responsibilities:**
+- Load available quiz categories from the use case.
+- **Offline Sync**: Automatically triggers `SyncQuestionsUseCase` to download 20+ questions per category for offline play.
+- **Reactive Cache**: Observes the local database to show only categories with cached questions when offline.
+**MVI Definition:**
+- **State**: `CategoryUiState` (loading, syncing status, list of categories, error).
+- **Intents**: `LoadCategories`, `SyncOfflineData`.
+- **Location**: `app/src/main/java/com/neo/trivia/ui/trivia/CategoryViewModel.kt`
+
+### 2. QuestionViewModel
+**Purpose:** Manages the active quiz session (`QuestionScreen`).
+**Responsibilities:**
+- Load questions based on selected category and difficulty.
+- **Hybrid Sourcing**: Fetches from the API but automatically falls back to the local database if offline.
+- **Unique Question Hashing**: Generates unique IDs for questions based on a hash of their text to prevent collisions.
+- Track progress, score, and individual answer results.
+- Save quiz results to the database upon completion.
+**MVI Definition:**
+- **State**: `QuestionUiState` (questions, current index, score, results, loading/error status).
+- **Intents**: `LoadQuestions`, `SelectAnswer`, `ResetQuizState`.
+- **Effects**: `NavigateToResults` (triggered when the quiz finishes).
+- **Location**: `app/src/main/java/com/neo/trivia/ui/trivia/QuestionViewModel.kt`
+
+### 3. QuizResultViewModel
+**Purpose:** Manages the results display and history review (`QuizResultScreen`).
+**Responsibilities:**
+- Fetch specific quiz results by ID or the latest saved session.
+- Provide functionality to reset the quiz state for a retake.
+**MVI Definition:**
+- **State**: `QuizResultUiState` (final score, results breakdown, loading status).
+- **Intents**: `LoadSavedResults`, `LoadResultById`, `ResetQuiz`.
+- **Location**: `app/src/main/java/com/neo/trivia/ui/trivia/QuizResultViewModel.kt`
+
+### 4. FavoritesViewModel
+**Purpose:** Manages the user's favorite questions (`FavoritesScreen`).
+**Responsibilities:**
+- Stream favorite questions from the local database.
+- Handle toggling the favorite status of a question.
+**MVI Definition:**
+- **State**: `FavoritesUiState` (list of favorite questions, loading status).
+- **Intents**: `LoadFavorites`, `ToggleFavorite`.
+- **Location**: `app/src/main/java/com/neo/trivia/ui/favorites/FavoritesViewModel.kt`
+
+### 5. StatisticsViewModel
+**Purpose:** Manages the user's overall performance metrics (`StatisticsScreen`).
+**Responsibilities:**
+- Aggregate data from quiz history to display total questions and performance.
+- Provide a list of recent quiz attempts.
+**MVI Definition:**
+- **State**: `StatisticsUiState` (quiz history list, total question count, loading status).
+- **Intents**: `LoadStatistics`.
+- **Location**: `app/src/main/java/com/neo/trivia/ui/stats/StatisticsViewModel.kt`
+
+---
+
+## 4. Data Layer & Offline-First Strategy 📶
 
 The app is designed to be fully functional without an internet connection.
 
@@ -48,7 +107,7 @@ The app is designed to be fully functional without an internet connection.
 
 ---
 
-## 4. UI & Design System 🎨
+## 5. UI & Design System 🎨
 
 - **Centralized Tokens**: All colors, spacing, and corner radii are defined as tokens in the `:design` module. 
 - **Theming**: 5 distinct theme modes with full dark mode support. Always use `MaterialTheme.colorScheme` instead of hardcoded colors.
@@ -56,7 +115,7 @@ The app is designed to be fully functional without an internet connection.
 
 ---
 
-## 5. Navigation & Coding Standards
+## 6. Navigation & Coding Standards
 
 - **Type-Safe Navigation**: Uses Jetpack Compose Navigation with type-safe routes.
 - **Backstack Management**: Quiz screens are popped from the backstack (`inclusive = true`) upon completion so that "Back" from the results screen leads Home.
@@ -65,8 +124,10 @@ The app is designed to be fully functional without an internet connection.
 
 ---
 
-## 6. Key Benefits
+## 7. Key Benefits
 
-1. **Predictability**: Every UI change is traceable to an intent.
-2. **Testability**: Business logic is isolated in Use Cases and ViewModel `handleIntent` blocks.
-3. **Resilience**: A robust offline fallback ensures the user experience is never interrupted by connectivity issues.
+1. **Single Source of Truth**: The state is immutable and held in one place.
+2. **Predictability**: Every UI change is traceable to a specific intent.
+3. **Debuggability**: Clear separation of user actions and state transitions.
+4. **Testability**: Business logic is isolated within the `handleIntent` function.
+5. **Resilience**: A robust offline fallback ensures the user experience is never interrupted.
