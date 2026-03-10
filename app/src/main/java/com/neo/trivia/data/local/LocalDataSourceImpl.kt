@@ -158,4 +158,16 @@ class LocalDataSourceImpl
             val results = deserializeQuizResults(entity.quizResultsJson)
             return Pair(questions, results)
         }
+
+        override suspend fun getRandomQuestions(
+            category: String,
+            type: String,
+            limit: Int,
+        ): List<Question> {
+            return questionDao.getRandomQuestions(category, type, limit).map { entityToQuestion(it) }
+        }
+
+        override suspend fun getQuestionCountByCategory(category: String): Int {
+            return questionDao.getQuestionCountByCategory(category)
+        }
     }

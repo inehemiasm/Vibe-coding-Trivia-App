@@ -1,7 +1,6 @@
 package com.neo.trivia.util
 
-import java.net.URLDecoder
-import java.nio.charset.StandardCharsets
+import android.text.Html
 
 /**
  * Utility class for cleaning HTML entities from text
@@ -10,8 +9,7 @@ object HtmlTextCleaner {
     /**
      * Cleans HTML entities from text including:
      * - HTML tags
-     * - HTML entities like &amp;, &lt;, &gt;, &quot;
-     * - URL encoded characters
+     * - HTML entities like &amp;, &lt;, &gt;, &quot;, &#039;
      * - Extra whitespace
      */
     fun cleanHtmlText(text: String?): String {
@@ -19,31 +17,12 @@ object HtmlTextCleaner {
             return ""
         }
 
-        var cleanText = text
-
-        // Remove HTML tags
-        cleanText = cleanText.replace(Regex("<[^>]*>"), "")
-
-        // Decode HTML entities
-        cleanText = cleanText.replace("&amp;", "&")
-        cleanText = cleanText.replace("&lt;", "<")
-        cleanText = cleanText.replace("&gt;", ">")
-        cleanText = cleanText.replace("&quot;", "\"")
-        cleanText = cleanText.replace("&apos;", "'")
-        cleanText = cleanText.replace("&nbsp;", " ")
-
-        // Handle URL encoded characters
-        try {
-            cleanText = URLDecoder.decode(cleanText, StandardCharsets.UTF_8.toString())
-        } catch (e: Exception) {
-            // If URL decoding fails, continue with existing text
-        }
+        // Use Android's Html.fromHtml to handle all HTML entities correctly.
+        // Since minSdk is 24, we can use the N+ version directly.
+        val decodedText = Html.fromHtml(text, Html.FROM_HTML_MODE_LEGACY).toString()
 
         // Trim and normalize whitespace
-        cleanText = cleanText.trim()
-        cleanText = cleanText.replace(Regex("\\s+"), " ")
-
-        return cleanText
+        return decodedText.trim().replace(Regex("\\s+"), " ")
     }
 
     /**

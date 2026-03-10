@@ -148,7 +148,10 @@ fun NavigationApp(navController: NavHostController = rememberNavController()) {
                         difficulty = Difficulty.valueOf(questionScreen.difficulty),
                         category = category,
                         onQuizFinished = { _, _ ->
-                            navController.navigate(QuizResultScreen)
+                            navController.navigate(QuizResultScreen) {
+                                // Pop the question screen from the backstack
+                                popUpTo<QuestionScreen> { inclusive = true }
+                            }
                         },
                     )
                 }

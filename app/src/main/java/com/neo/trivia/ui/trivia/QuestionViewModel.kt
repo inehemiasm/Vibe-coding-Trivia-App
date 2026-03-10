@@ -29,6 +29,13 @@ class QuestionViewModel
             when (intent) {
                 is QuestionIntent.LoadQuestions -> getQuestions(intent.amount, intent.category, intent.difficulty)
                 is QuestionIntent.SelectAnswer -> onAnswerSelected(intent.answerIndex)
+                is QuestionIntent.ResetQuizState -> resetState()
+            }
+        }
+
+        private fun resetState() {
+            setState { 
+                QuestionUiState()
             }
         }
 
@@ -39,7 +46,7 @@ class QuestionViewModel
         ) {
             this.category = category
             viewModelScope.launch {
-                setState { copy(isLoading = true, error = null) }
+                setState { copy(isLoading = true, error = null, currentQuestionIndex = 0, score = 0, quizResults = emptyList(), isFinished = false) }
                 try {
                     val questions = getQuestionsUseCase(amount, category, difficulty).getOrThrow()
                     setState { copy(isLoading = false, questions = questions) }
@@ -51,7 +58,7 @@ class QuestionViewModel
 
         private fun onAnswerSelected(answerIndex: Int) {
             val state = currentState
-            if (state.questions.isEmpty()) return
+            if (state.questions.isEmpty() || state.isFinished) return
 
             val currentQuestion = state.questions[state.currentQuestionIndex]
             val isCorrect = currentQuestion.correctAnswer == currentQuestion.answers[answerIndex]
@@ -126,6 +133,8 @@ sealed class QuestionIntent : UiIntent {
     data class LoadQuestions(val amount: Int, val category: Category?, val difficulty: Difficulty) : QuestionIntent()
 
     data class SelectAnswer(val answerIndex: Int) : QuestionIntent()
+
+    object ResetQuizState : QuestionIntent()
 }
 
 sealed class QuestionUiEffect : UiEffect {

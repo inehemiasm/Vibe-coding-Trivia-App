@@ -51,4 +51,16 @@ interface QuestionDao {
      */
     @Query("SELECT * FROM questions WHERE id = :questionId")
     suspend fun getQuestionById(questionId: String): QuestionEntity?
+
+    /**
+     * Retrieves random questions for a specific category and difficulty.
+     */
+    @Query("SELECT * FROM questions WHERE category = :category AND type = :type ORDER BY RANDOM() LIMIT :limit")
+    suspend fun getRandomQuestions(category: String, type: String, limit: Int): List<QuestionEntity>
+
+    /**
+     * Counts questions for a specific category.
+     */
+    @Query("SELECT COUNT(*) FROM questions WHERE category = :category")
+    suspend fun getQuestionCountByCategory(category: String): Int
 }

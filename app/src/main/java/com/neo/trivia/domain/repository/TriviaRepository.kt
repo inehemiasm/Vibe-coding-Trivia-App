@@ -49,4 +49,12 @@ interface TriviaRepository {
     fun getLatestQuizResult(): Flow<QuizResult?>
 
     suspend fun getQuizResultById(id: String): Pair<List<Question>, List<QuizResult>>?
+
+    suspend fun getQuestionsOffline(
+        category: Category,
+        difficulty: Difficulty,
+        amount: Int,
+    ): List<Question>
+
+    suspend fun syncQuestions(categories: List<Category>, targetAmountPerCategory: Int)
 }

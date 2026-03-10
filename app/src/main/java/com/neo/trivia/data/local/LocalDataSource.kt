@@ -49,4 +49,8 @@ interface LocalDataSource {
     )
 
     suspend fun getQuizResultById(id: String): Pair<List<Question>, List<QuizResult>>?
+
+    suspend fun getRandomQuestions(category: String, type: String, limit: Int): List<Question>
+
+    suspend fun getQuestionCountByCategory(category: String): Int
 }

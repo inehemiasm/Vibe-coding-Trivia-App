@@ -30,13 +30,37 @@ class TriviaRepositoryImpl
                         localDataSource.insertQuestions(remoteResult.data)
                         kotlin.Result.success(remoteResult.data)
                     }
-                    is com.neo.trivia.data.Result.Failure -> kotlin.Result.failure(remoteResult.error)
+                    is com.neo.trivia.data.Result.Failure -> {
+                        // Fallback to local if remote fails
+                        if (category != null) {
+                            val offlineQuestions = localDataSource.getRandomQuestions(
+                                category = category.name,
+                                type = "multiple", // Defaulting to multiple choice for now as per app logic
+                                limit = amount
+                            )
+                            if (offlineQuestions.isNotEmpty()) {
+                                return kotlin.Result.success(offlineQuestions)
+                            }
+                        }
+                        kotlin.Result.failure(remoteResult.error)
+                    }
                     is com.neo.trivia.data.Result.Loading ->
                         kotlin.Result.failure(
                             IllegalStateException("getQuestionsSync should not be in a loading state"),
                         )
                 }
             } catch (e: Exception) {
+                // Fallback to local on exception
+                if (category != null) {
+                    val offlineQuestions = localDataSource.getRandomQuestions(
+                        category = category.name,
+                        type = "multiple",
+                        limit = amount
+                    )
+                    if (offlineQuestions.isNotEmpty()) {
+                        return kotlin.Result.success(offlineQuestions)
+                    }
+                }
                 kotlin.Result.failure(e)
             }
         }
@@ -110,5 +134,37 @@ class TriviaRepositoryImpl
 
         override suspend fun getQuizResultById(id: String): Pair<List<Question>, List<QuizResult>>? {
             return localDataSource.getQuizResultById(id)
+        }
+
+        override suspend fun getQuestionsOffline(
+            category: Category,
+            difficulty: Difficulty,
+            amount: Int,
+        ): List<Question> {
+            return localDataSource.getRandomQuestions(
+                category = category.name,
+                type = "multiple",
+                limit = amount
+            )
+        }
+
+        override suspend fun syncQuestions(categories: List<Category>, targetAmountPerCategory: Int) {
+            for (category in categories) {
+                val currentCount = localDataSource.getQuestionCountByCategory(category.name)
+                if (currentCount < targetAmountPerCategory) {
+                    val amountToFetch = targetAmountPerCategory - currentCount
+                    // Fetch for each difficulty to have a variety
+                    for (difficulty in Difficulty.values()) {
+                        val result = remoteDataSource.getQuestionsSync(
+                            amount = amountToFetch / 3 + 1,
+                            category = category,
+                            difficulty = difficulty
+                        )
+                        if (result is com.neo.trivia.data.Result.Success) {
+                            localDataSource.insertQuestions(result.data)
+                        }
+                    }
+                }
+            }
         }
     }
