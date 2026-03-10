@@ -1,13 +1,13 @@
 package com.neo.design.cards
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CheckboxDefaults.colors
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
@@ -22,32 +22,24 @@ fun AppCard(
     border: BorderStroke? = null,
     horizontalPadding: Dp = 16.dp,
     verticalPadding: Dp = 16.dp,
-    clickable: Boolean = false,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val elevationModifier =
-        if (clickable) {
-            CardDefaults.outlinedCardColors()
-        } else {
-            colors()
-        }
-
-    if (onClick != null) {
-        Card(
-            onClick = onClick,
-            modifier = modifier,
-            shape = shape,
-            elevation = CardDefaults.elevatedCardElevation(),
-//        colors = if (clickable && onClick != null) elevationModifier else colors,
-            border = border,
-        ) {
-            androidx.compose.foundation.layout.Column(
-                modifier =
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(horizontalPadding, verticalPadding),
-                content = content,
-            )
-        }
+    Card(
+        onClick = onClick ?: {},
+        modifier = modifier,
+        shape = shape,
+        elevation = CardDefaults.elevatedCardElevation(defaultElevation = 4.dp),
+        colors = CardDefaults.cardColors(
+            containerColor = androidx.compose.material3.MaterialTheme.colorScheme.surface
+        ),
+        border = border,
+        enabled = onClick != null
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = horizontalPadding, vertical = verticalPadding),
+            content = content,
+        )
     }
 }

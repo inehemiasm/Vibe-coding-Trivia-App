@@ -6,10 +6,10 @@ import androidx.compose.ui.graphics.Color
  * Trivia App Color Palette
  *
  * Theme Options:
+ * - Playful: Purple + Yellow (classic trivia feel)
  * - Vibrant: Orange + Blue (energetic, fun)
  * - Ocean: Teal + Blue (fresh, modern)
  * - Sunset: Purple + Orange (warm, engaging)
- * - Mint: Green + Teal (fresh, playful)
  */
 
 data class ColorScheme(
@@ -24,9 +24,41 @@ data class ColorScheme(
     val surfaceVariant: Color,
     val error: Color,
     val onError: Color,
+    val success: Color = Color(0xFF4CAF50),
+    val onSuccess: Color = Color(0xFFFFFFFF),
 )
 
 object TriviaColors {
+    // Playful Theme (Classic Trivia)
+    val Playful = ColorScheme(
+        primary = Color(0xFF673AB7), // Deep Purple
+        onPrimary = Color(0xFFFFFFFF),
+        secondary = Color(0xFFFFC107), // Amber
+        onSecondary = Color(0xFF000000),
+        tertiary = Color(0xFF00BCD4), // Cyan
+        onTertiary = Color(0xFFFFFFFF),
+        background = Color(0xFFF3E5F5), // Light Purple Background
+        surface = Color(0xFFFFFFFF),
+        surfaceVariant = Color(0xFFEDE7F6),
+        error = Color(0xFFE91E63),
+        onError = Color(0xFFFFFFFF),
+    )
+
+    // Playful Dark Theme
+    val PlayfulDark = ColorScheme(
+        primary = Color(0xFF9575CD),
+        onPrimary = Color(0xFFFFFFFF),
+        secondary = Color(0xFFFFD54F),
+        onSecondary = Color(0xFF000000),
+        tertiary = Color(0xFF4DD0E1),
+        onTertiary = Color(0xFF000000),
+        background = Color(0xFF121212),
+        surface = Color(0xFF1E1E1E),
+        surfaceVariant = Color(0xFF2C2C2C),
+        error = Color(0xFFF06292),
+        onError = Color(0xFFFFFFFF),
+    )
+
     // Vibrant Theme (Default)
     val Vibrant =
         ColorScheme(

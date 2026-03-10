@@ -64,6 +64,7 @@ object DataModule {
             questionDao = database.questionDao(),
             favoriteDao = database.favoriteDao(),
             quizResultDao = database.quizResultDao(),
+            categoryDao = database.categoryDao(),
             gson = gson,
         )
     }

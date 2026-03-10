@@ -50,7 +50,15 @@ interface LocalDataSource {
 
     suspend fun getQuizResultById(id: String): Pair<List<Question>, List<QuizResult>>?
 
-    suspend fun getRandomQuestions(category: String, type: String, limit: Int): List<Question>
+    suspend fun getRandomQuestions(category: String?, limit: Int): List<Question>
+
+    suspend fun getRandomQuestionsWithFallback(category: String, limit: Int): List<Question>
 
     suspend fun getQuestionCountByCategory(category: String): Int
+
+    suspend fun insertCategories(categories: List<Category>)
+
+    fun getCachedCategories(): Flow<List<Category>>
+
+    fun getCategoriesWithQuestions(): Flow<List<Category>>
 }

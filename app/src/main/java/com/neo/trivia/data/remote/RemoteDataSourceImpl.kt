@@ -7,20 +7,13 @@ import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.util.HtmlTextCleaner
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.neo.trivia.domain.model.Question as DomainQuestion
 
 /**
  * Remote data source implementation using Retrofit API.
- * Handles all API communication with Open Trivia DB.
- * Converts API responses to domain Question models.
- *
- * This implementation handles:
- * - Question fetching with category and difficulty filtering
- * - Category listing
- * - Error handling with Result wrapper
- * - Async operations using Flow and suspend functions
  */
 @Singleton
 class RemoteDataSourceImpl
@@ -28,10 +21,7 @@ class RemoteDataSourceImpl
     constructor(
         private val api: TriviaApi,
     ) : RemoteDataSource {
-        /**
-         * Converts API Question object to domain Question object.
-         * Includes the correct answer and all incorrect answers as possible choices.
-         */
+
         override fun getQuestions(
             amount: Int,
             category: Category?,
@@ -46,14 +36,16 @@ class RemoteDataSourceImpl
 
                     if (response.isSuccessful && response.body() != null) {
                         val questions =
-                            response.body()!!.results.mapIndexed { index, apiQuestion ->
+                            response.body()!!.results.map { apiQuestion ->
                                 DomainQuestion(
-                                    id = index.toString(),
+                                    // Use a hash of the question text to create a unique ID 
+                                    // and avoid collisions/overwriting in the database.
+                                    id = apiQuestion.question.hashCode().toString(),
                                     question = HtmlTextCleaner.cleanHtmlText(apiQuestion.question),
                                     answers =
                                         HtmlTextCleaner.cleanTextList(
                                             listOf(apiQuestion.correctAnswer, *apiQuestion.incorrectAnswers.toTypedArray()),
-                                        ),
+                                        ).shuffled(),
                                     correctAnswer = HtmlTextCleaner.cleanHtmlText(apiQuestion.correctAnswer),
                                     category = HtmlTextCleaner.cleanHtmlText(apiQuestion.category),
                                     type = HtmlTextCleaner.cleanHtmlText(apiQuestion.type),
@@ -80,14 +72,14 @@ class RemoteDataSourceImpl
 
                 if (response.isSuccessful && response.body() != null) {
                     val questions =
-                        response.body()!!.results.mapIndexed { index, apiQuestion ->
+                        response.body()!!.results.map { apiQuestion ->
                             DomainQuestion(
-                                id = index.toString(),
+                                id = apiQuestion.question.hashCode().toString(),
                                 question = HtmlTextCleaner.cleanHtmlText(apiQuestion.question),
                                 answers =
                                     HtmlTextCleaner.cleanTextList(
                                         listOf(apiQuestion.correctAnswer, *apiQuestion.incorrectAnswers.toTypedArray()),
-                                    ),
+                                    ).shuffled(),
                                 correctAnswer = HtmlTextCleaner.cleanHtmlText(apiQuestion.correctAnswer),
                                 category = HtmlTextCleaner.cleanHtmlText(apiQuestion.category),
                                 type = HtmlTextCleaner.cleanHtmlText(apiQuestion.type),
@@ -117,9 +109,5 @@ class RemoteDataSourceImpl
             } catch (e: Exception) {
                 Result.Failure(e)
             }
-        }
-
-        companion object {
-            private const val QUESTION_TYPE = "multiple"
         }
     }

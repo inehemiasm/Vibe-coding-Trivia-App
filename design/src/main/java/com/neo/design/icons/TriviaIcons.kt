@@ -22,28 +22,28 @@ import androidx.compose.material.icons.filled.Star
  * Trivia App icon set with all necessary icons for the application.
  * These icons are categorized by their usage in the app.
  */
-object TriviaIcons {
-    // Navigation icons
-    val Home = Icons.Default.Home
-    val Back = Icons.AutoMirrored.Filled.ArrowBack
-    val Close = Icons.Default.Close
-    val Search = Icons.Default.Search
-    val Settings = Icons.Default.Settings
-    val Stats = Icons.Default.Star
-
-    // Action icons
-    val Favorite = Icons.Default.Favorite
-    val FavoriteBorder = Icons.Default.FavoriteBorder
-    val Info = Icons.Default.Info
-    val Check = Icons.Default.Check
-    val Error = Icons.Default.Error
-
-    // Quiz icons
-    val Play = Icons.Default.PlayArrow
-    val Pause = Icons.Default.Pause
-    val Replay = Icons.Default.Replay
-
-    // UI icons
-    val More = Icons.Default.MoreHoriz
-    val Expand = Icons.Default.ExpandMore
-}
+//object TriviaIcons {
+//    // Navigation icons
+//    val Home = Icons.Default.Home
+//    val Back = Icons.AutoMirrored.Filled.ArrowBack
+//    val Close = Icons.Default.Close
+//    val Search = Icons.Default.Search
+//    val Settings = Icons.Default.Settings
+//    val Stats = Icons.Default.Star
+//
+//    // Action icons
+//    val Favorite = Icons.Default.Favorite
+//    val FavoriteBorder = Icons.Default.FavoriteBorder
+//    val Info = Icons.Default.Info
+//    val Check = Icons.Default.Check
+//    val Error = Icons.Default.Error
+//
+//    // Quiz icons
+//    val Play = Icons.Default.PlayArrow
+//    val Pause = Icons.Default.Pause
+//    val Replay = Icons.Default.Replay
+//
+//    // UI icons
+//    val More = Icons.Default.MoreHoriz
+//    val Expand = Icons.Default.ExpandMore
+//}

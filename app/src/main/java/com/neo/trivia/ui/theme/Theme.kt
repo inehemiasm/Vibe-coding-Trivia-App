@@ -15,9 +15,39 @@ import com.neo.design.typography.Typography as DesignTypography
 /**
  * Trivia App Theme
  *
- * Theme options: Vibrant, Ocean, Sunset, Mint
+ * Theme options: Playful, Vibrant, Ocean, Sunset, Mint
  * Can be configured via themeMode parameter
  */
+private val PlayfulLightColors =
+    lightColorScheme(
+        primary = TriviaColors.Playful.primary,
+        onPrimary = TriviaColors.Playful.onPrimary,
+        secondary = TriviaColors.Playful.secondary,
+        onSecondary = TriviaColors.Playful.onSecondary,
+        tertiary = TriviaColors.Playful.tertiary,
+        onTertiary = TriviaColors.Playful.onTertiary,
+        background = TriviaColors.Playful.background,
+        surface = TriviaColors.Playful.surface,
+        surfaceVariant = TriviaColors.Playful.surfaceVariant,
+        error = TriviaColors.Playful.error,
+        onError = TriviaColors.Playful.onError,
+    )
+
+private val PlayfulDarkColors =
+    darkColorScheme(
+        primary = TriviaColors.PlayfulDark.primary,
+        onPrimary = TriviaColors.PlayfulDark.onPrimary,
+        secondary = TriviaColors.PlayfulDark.secondary,
+        onSecondary = TriviaColors.PlayfulDark.onSecondary,
+        tertiary = TriviaColors.PlayfulDark.tertiary,
+        onTertiary = TriviaColors.PlayfulDark.onTertiary,
+        background = TriviaColors.PlayfulDark.background,
+        surface = TriviaColors.PlayfulDark.surface,
+        surfaceVariant = TriviaColors.PlayfulDark.surfaceVariant,
+        error = TriviaColors.PlayfulDark.error,
+        onError = TriviaColors.PlayfulDark.onError,
+    )
+
 private val VibrantLightColors =
     lightColorScheme(
         primary = TriviaColors.Vibrant.primary,
@@ -138,27 +168,20 @@ private val MintDarkColors =
         onError = TriviaColors.MintDark.onError,
     )
 
-private val DarkColorScheme = VibrantDarkColors
-private val LightColorScheme = VibrantLightColors
-
 enum class ThemeMode {
+    Playful,
     Vibrant,
     Ocean,
     Sunset,
     Mint,
 }
 
-enum class ThemeColor {
-    Light,
-    Dark,
-}
-
 @Composable
 fun TriviaAppTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    themeMode: ThemeMode = ThemeMode.Vibrant,
+    themeMode: ThemeMode = ThemeMode.Playful,
     // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme =
@@ -170,6 +193,7 @@ fun TriviaAppTheme(
 
             darkTheme ->
                 when (themeMode) {
+                    ThemeMode.Playful -> PlayfulDarkColors
                     ThemeMode.Vibrant -> VibrantDarkColors
                     ThemeMode.Ocean -> OceanDarkColors
                     ThemeMode.Sunset -> SunsetDarkColors
@@ -178,6 +202,7 @@ fun TriviaAppTheme(
 
             else ->
                 when (themeMode) {
+                    ThemeMode.Playful -> PlayfulLightColors
                     ThemeMode.Vibrant -> VibrantLightColors
                     ThemeMode.Ocean -> OceanLightColors
                     ThemeMode.Sunset -> SunsetLightColors

@@ -1,6 +1,5 @@
 package com.neo.trivia.ui.trivia
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +12,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Lightbulb
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.MusicNote
+import androidx.compose.material.icons.filled.Palette
+import androidx.compose.material.icons.filled.Public
+import androidx.compose.material.icons.filled.Science
+import androidx.compose.material.icons.filled.Sports
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Tv
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -26,10 +36,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.neo.design.buttons.PrimaryButton
 import com.neo.design.cards.CategoryCard
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
@@ -52,11 +65,11 @@ fun CategorySelectionScreen(
 
     if (state.isLoading) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+            CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
         }
     } else if (state.error != null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(state.error!!)
+            Text(state.error!!, color = MaterialTheme.colorScheme.error)
         }
     } else {
         Column(
@@ -65,7 +78,12 @@ fun CategorySelectionScreen(
                     .fillMaxSize()
                     .padding(16.dp),
         ) {
-            Text("Categories", style = MaterialTheme.typography.headlineSmall)
+            Text(
+                text = "Choose a Category",
+                style = MaterialTheme.typography.headlineLarge,
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.height(16.dp))
             LazyVerticalGrid(
                 columns = GridCells.Fixed(2),
@@ -74,47 +92,51 @@ fun CategorySelectionScreen(
                 items(state.categories) { category ->
                     CategoryCard(
                         categoryName = category.name,
+                        icon = getCategoryIcon(category.name),
                         onCategoryClick = { selectedCategory = category },
-                        border =
-                            if (selectedCategory == category) {
-                                BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                            } else {
-                                null
-                            },
+                        selected = selectedCategory == category
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(32.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Text("Difficulty", style = MaterialTheme.typography.headlineSmall)
-            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Select Difficulty",
+                style = MaterialTheme.typography.headlineSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+                fontWeight = FontWeight.SemiBold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 difficulties.forEach { difficulty ->
                     Button(
                         onClick = { selectedDifficulty = difficulty },
+                        modifier = Modifier.weight(1f),
                         colors =
                             ButtonDefaults.buttonColors(
                                 containerColor =
                                     if (selectedDifficulty == difficulty) {
-                                        MaterialTheme.colorScheme.primary
+                                        MaterialTheme.colorScheme.secondary
                                     } else {
-                                        MaterialTheme.colorScheme.surface
+                                        MaterialTheme.colorScheme.surfaceVariant
                                     },
                             ),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp)
                     ) {
                         Text(
                             text = difficulty.name,
                             color =
                                 if (selectedDifficulty == difficulty) {
-                                    MaterialTheme.colorScheme.onPrimary
+                                    MaterialTheme.colorScheme.onSecondary
                                 } else {
-                                    MaterialTheme.colorScheme.onSurface
+                                    MaterialTheme.colorScheme.onSurfaceVariant
                                 },
+                            style = MaterialTheme.typography.labelLarge
                         )
                     }
                 }
@@ -122,7 +144,8 @@ fun CategorySelectionScreen(
 
             Spacer(modifier = Modifier.height(32.dp))
 
-            Button(
+            PrimaryButton(
+                text = "Start Quiz",
                 onClick = {
                     selectedCategory?.let { category ->
                         selectedDifficulty?.let { difficulty ->
@@ -137,9 +160,22 @@ fun CategorySelectionScreen(
                 },
                 modifier = Modifier.fillMaxWidth(),
                 enabled = selectedCategory != null && selectedDifficulty != null,
-            ) {
-                Text("Start Quiz")
-            }
+            )
         }
+    }
+}
+
+private fun getCategoryIcon(name: String): ImageVector {
+    return when {
+        name.contains("General", ignoreCase = true) -> Icons.Filled.Lightbulb
+        name.contains("Book", ignoreCase = true) -> Icons.Filled.MenuBook
+        name.contains("Film", ignoreCase = true) || name.contains("Movie", ignoreCase = true) -> Icons.Filled.Palette
+        name.contains("Music", ignoreCase = true) -> Icons.Filled.MusicNote
+        name.contains("Television", ignoreCase = true) -> Icons.Filled.Tv
+        name.contains("Science", ignoreCase = true) || name.contains("Nature", ignoreCase = true) -> Icons.Filled.Science
+        name.contains("Sport", ignoreCase = true) -> Icons.Filled.Sports
+        name.contains("Geography", ignoreCase = true) -> Icons.Filled.Public
+        name.contains("History", ignoreCase = true) -> Icons.Filled.History
+        else -> Icons.Filled.Star
     }
 }

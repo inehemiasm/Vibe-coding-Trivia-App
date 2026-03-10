@@ -57,4 +57,6 @@ interface TriviaRepository {
     ): List<Question>
 
     suspend fun syncQuestions(categories: List<Category>, targetAmountPerCategory: Int)
+
+    fun getCategoriesWithQuestions(): Flow<List<Category>>
 }

@@ -53,10 +53,28 @@ interface QuestionDao {
     suspend fun getQuestionById(questionId: String): QuestionEntity?
 
     /**
-     * Retrieves random questions for a specific category and difficulty.
+     * Retrieves random questions. 
+     * Prioritizes the specified category if provided.
      */
-    @Query("SELECT * FROM questions WHERE category = :category AND type = :type ORDER BY RANDOM() LIMIT :limit")
-    suspend fun getRandomQuestions(category: String, type: String, limit: Int): List<QuestionEntity>
+    @Query("""
+        SELECT * FROM questions 
+        WHERE (:category IS NULL OR category = :category) 
+        ORDER BY RANDOM() LIMIT :limit
+    """)
+    suspend fun getRandomQuestions(category: String?, limit: Int): List<QuestionEntity>
+
+    /**
+     * A more robust query that fills up to 'limit' questions, 
+     * preferring the chosen category but including others if the category is short.
+     */
+    @Query("""
+        SELECT * FROM (
+            SELECT *, 1 as priority FROM questions WHERE category = :category
+            UNION ALL
+            SELECT *, 2 as priority FROM questions WHERE category != :category
+        ) ORDER BY priority ASC, RANDOM() LIMIT :limit
+    """)
+    suspend fun getRandomQuestionsWithFallback(category: String, limit: Int): List<QuestionEntity>
 
     /**
      * Counts questions for a specific category.

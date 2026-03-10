@@ -9,6 +9,7 @@ import com.neo.trivia.domain.model.QuizHistory
 import com.neo.trivia.domain.model.QuizResult
 import com.neo.trivia.domain.repository.TriviaRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -33,12 +34,11 @@ class TriviaRepositoryImpl
                     is com.neo.trivia.data.Result.Failure -> {
                         // Fallback to local if remote fails
                         if (category != null) {
-                            val offlineQuestions = localDataSource.getRandomQuestions(
+                            val offlineQuestions = localDataSource.getRandomQuestionsWithFallback(
                                 category = category.name,
-                                type = "multiple", // Defaulting to multiple choice for now as per app logic
                                 limit = amount
                             )
-                            if (offlineQuestions.isNotEmpty()) {
+                            if (offlineQuestions.size >= amount) {
                                 return kotlin.Result.success(offlineQuestions)
                             }
                         }
@@ -52,12 +52,11 @@ class TriviaRepositoryImpl
             } catch (e: Exception) {
                 // Fallback to local on exception
                 if (category != null) {
-                    val offlineQuestions = localDataSource.getRandomQuestions(
+                    val offlineQuestions = localDataSource.getRandomQuestionsWithFallback(
                         category = category.name,
-                        type = "multiple",
                         limit = amount
                     )
-                    if (offlineQuestions.isNotEmpty()) {
+                    if (offlineQuestions.size >= amount) {
                         return kotlin.Result.success(offlineQuestions)
                     }
                 }
@@ -68,15 +67,30 @@ class TriviaRepositoryImpl
         override suspend fun getCategories(): kotlin.Result<List<Category>> {
             return try {
                 when (val result = remoteDataSource.getCategories()) {
-                    is com.neo.trivia.data.Result.Success -> kotlin.Result.success(result.data)
-                    is com.neo.trivia.data.Result.Failure -> kotlin.Result.failure(result.error)
+                    is com.neo.trivia.data.Result.Success -> {
+                        localDataSource.insertCategories(result.data)
+                        kotlin.Result.success(result.data)
+                    }
+                    is com.neo.trivia.data.Result.Failure -> {
+                        val cached = localDataSource.getCachedCategories().first()
+                        if (cached.isNotEmpty()) {
+                            kotlin.Result.success(cached)
+                        } else {
+                            kotlin.Result.failure(result.error)
+                        }
+                    }
                     is com.neo.trivia.data.Result.Loading ->
                         kotlin.Result.failure(
                             IllegalStateException("getCategories should not be in a loading state"),
                         )
                 }
             } catch (e: Exception) {
-                kotlin.Result.failure(e)
+                val cached = localDataSource.getCachedCategories().first()
+                if (cached.isNotEmpty()) {
+                    kotlin.Result.success(cached)
+                } else {
+                    kotlin.Result.failure(e)
+                }
             }
         }
 
@@ -141,9 +155,8 @@ class TriviaRepositoryImpl
             difficulty: Difficulty,
             amount: Int,
         ): List<Question> {
-            return localDataSource.getRandomQuestions(
+            return localDataSource.getRandomQuestionsWithFallback(
                 category = category.name,
-                type = "multiple",
                 limit = amount
             )
         }
@@ -153,8 +166,7 @@ class TriviaRepositoryImpl
                 val currentCount = localDataSource.getQuestionCountByCategory(category.name)
                 if (currentCount < targetAmountPerCategory) {
                     val amountToFetch = targetAmountPerCategory - currentCount
-                    // Fetch for each difficulty to have a variety
-                    for (difficulty in Difficulty.values()) {
+                    for (difficulty in Difficulty.entries) {
                         val result = remoteDataSource.getQuestionsSync(
                             amount = amountToFetch / 3 + 1,
                             category = category,
@@ -166,5 +178,9 @@ class TriviaRepositoryImpl
                     }
                 }
             }
+        }
+
+        override fun getCategoriesWithQuestions(): Flow<List<Category>> {
+            return localDataSource.getCategoriesWithQuestions()
         }
     }

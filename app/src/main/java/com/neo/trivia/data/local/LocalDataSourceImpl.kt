@@ -2,9 +2,11 @@ package com.neo.trivia.data.local
 
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import com.neo.trivia.data.database.dao.CategoryDao
 import com.neo.trivia.data.database.dao.FavoriteDao
 import com.neo.trivia.data.database.dao.QuestionDao
 import com.neo.trivia.data.database.dao.QuizResultDao
+import com.neo.trivia.data.database.entity.CategoryEntity
 import com.neo.trivia.data.database.entity.FavoriteEntity
 import com.neo.trivia.data.database.entity.QuestionEntity
 import com.neo.trivia.data.database.entity.QuizResultEntity
@@ -24,6 +26,7 @@ class LocalDataSourceImpl
         private val questionDao: QuestionDao,
         private val favoriteDao: FavoriteDao,
         private val quizResultDao: QuizResultDao,
+        private val categoryDao: CategoryDao,
         private val gson: Gson,
     ) : LocalDataSource {
         private fun questionToEntity(question: Question): QuestionEntity {
@@ -45,6 +48,22 @@ class LocalDataSourceImpl
                 answers = entity.incorrectAnswers,
                 category = entity.category,
                 type = entity.type,
+            )
+        }
+
+        private fun categoryToEntity(category: Category): CategoryEntity {
+            return CategoryEntity(
+                id = category.id,
+                name = category.name,
+                icon = category.icon,
+            )
+        }
+
+        private fun entityToCategory(entity: CategoryEntity): Category {
+            return Category(
+                id = entity.id,
+                name = entity.name,
+                icon = entity.icon,
             )
         }
 
@@ -160,14 +179,37 @@ class LocalDataSourceImpl
         }
 
         override suspend fun getRandomQuestions(
-            category: String,
-            type: String,
+            category: String?,
             limit: Int,
         ): List<Question> {
-            return questionDao.getRandomQuestions(category, type, limit).map { entityToQuestion(it) }
+            return questionDao.getRandomQuestions(category, limit).map { entityToQuestion(it) }
+        }
+
+        override suspend fun getRandomQuestionsWithFallback(
+            category: String,
+            limit: Int,
+        ): List<Question> {
+            return questionDao.getRandomQuestionsWithFallback(category, limit).map { entityToQuestion(it) }
         }
 
         override suspend fun getQuestionCountByCategory(category: String): Int {
             return questionDao.getQuestionCountByCategory(category)
+        }
+
+        override suspend fun insertCategories(categories: List<Category>) {
+            val entities = categories.map { categoryToEntity(it) }
+            categoryDao.insertAll(entities)
+        }
+
+        override fun getCachedCategories(): Flow<List<Category>> {
+            return categoryDao.getAllCategories().map { entities ->
+                entities.map { entityToCategory(it) }
+            }
+        }
+
+        override fun getCategoriesWithQuestions(): Flow<List<Category>> {
+            return categoryDao.getCategoriesWithQuestions().map { entities ->
+                entities.map { entityToCategory(it) }
+            }
         }
     }

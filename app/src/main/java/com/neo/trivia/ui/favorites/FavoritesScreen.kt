@@ -35,7 +35,6 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.neo.design.cards.AppCard
 import com.neo.design.icons.AppIcon
-import com.neo.design.icons.TriviaIcons
 import com.neo.trivia.domain.model.Question
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -140,17 +139,6 @@ fun FavoriteQuestionCard(
                 text = question.category,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primary,
-            )
-        }
-
-        IconButton(
-            onClick = onFavoriteToggle,
-            modifier = Modifier.align(Alignment.End),
-        ) {
-            AppIcon(
-                icon = if (isFavorite) TriviaIcons.Favorite else TriviaIcons.FavoriteBorder,
-                contentDescription = "Toggle favorite",
-                tint = if (isFavorite) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }

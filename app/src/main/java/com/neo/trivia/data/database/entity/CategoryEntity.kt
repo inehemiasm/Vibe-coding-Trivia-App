@@ -5,18 +5,15 @@ import androidx.room.PrimaryKey
 
 /**
  * Room entity representing a trivia category.
- * Stored in the 'categories' table in the local database.
  *
  * @property id Unique identifier for the category
  * @property name The name of the category
- * @property icon The icon associated with the category
- * @property createdAt Timestamp when the category was created
+ * @property icon The icon name for the category
  */
 @Entity(tableName = "categories")
 data class CategoryEntity(
     @PrimaryKey
-    val id: String,
+    val id: Int,
     val name: String,
-    val icon: String,
-    val createdAt: Long = System.currentTimeMillis(),
+    val icon: String = "Star",
 )
