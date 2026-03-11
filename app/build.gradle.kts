@@ -18,6 +18,10 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Expose the API key from gradle.properties (local or global)
+        val geminiApiKey = project.findProperty("GEMINI_API_KEY") as? String ?: ""
+        buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
     }
 
     buildTypes {
@@ -33,9 +37,7 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-//    kotlin {
-//        jvmToolchain(17)
-//    }
+
     buildFeatures {
         compose = true
         buildConfig = true
@@ -87,6 +89,13 @@ dependencies {
 
     // Logging
     implementation(libs.timber)
+
+    // AI
+    implementation(libs.google.ai.client)
+
+    // WorkManager
+    implementation(libs.androidx.work.runtime.ktx)
+    implementation(libs.hilt.work)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

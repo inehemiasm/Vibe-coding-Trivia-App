@@ -5,6 +5,7 @@ import com.neo.trivia.core.BaseViewModel
 import com.neo.trivia.core.UiEffect
 import com.neo.trivia.core.UiIntent
 import com.neo.trivia.core.UiState
+import com.neo.trivia.data.preferences.SyncPreferencesManager
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.usecase.GetCategoriesUseCase
 import com.neo.trivia.domain.usecase.SyncQuestionsUseCase
@@ -19,6 +20,7 @@ class CategoryViewModel
     constructor(
         private val getCategoriesUseCase: GetCategoriesUseCase,
         private val syncQuestionsUseCase: SyncQuestionsUseCase,
+        private val syncPreferencesManager: SyncPreferencesManager,
     ) : BaseViewModel<CategoryUiState, CategoryIntent, CategoryUiEffect>(CategoryUiState()) {
         
         init {
@@ -51,8 +53,11 @@ class CategoryViewModel
                     if (result.isSuccess) {
                         val categories = result.getOrThrow()
                         setState { copy(isLoading = false, categories = categories) }
-                        // Automatically trigger sync after categories are loaded
-                        onIntent(CategoryIntent.SyncOfflineData)
+                        
+                        // Only trigger sync if 24 hours have passed
+                        if (syncPreferencesManager.shouldSync()) {
+                            onIntent(CategoryIntent.SyncOfflineData)
+                        }
                     } else {
                         // If remote fails, the init block observer will pick up local categories 
                         // that have questions if they exist.
@@ -80,6 +85,7 @@ class CategoryViewModel
                 setState { copy(isSyncing = true) }
                 try {
                     syncQuestionsUseCase(targetAmountPerCategory = 20)
+                    syncPreferencesManager.updateLastSyncTime()
                     setState { copy(isSyncing = false) }
                 } catch (e: Exception) {
                     setState { copy(isSyncing = false) }

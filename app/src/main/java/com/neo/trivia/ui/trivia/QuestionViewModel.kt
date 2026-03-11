@@ -2,9 +2,11 @@ package com.neo.trivia.ui.trivia
 
 import androidx.lifecycle.viewModelScope
 import com.neo.trivia.core.BaseViewModel
+import com.neo.trivia.core.NetworkMonitor
 import com.neo.trivia.core.UiEffect
 import com.neo.trivia.core.UiIntent
 import com.neo.trivia.core.UiState
+import com.neo.trivia.data.remote.TriviaAiManager
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.domain.model.Question
@@ -12,6 +14,7 @@ import com.neo.trivia.domain.model.QuizResult
 import com.neo.trivia.domain.usecase.GetQuestionsUseCase
 import com.neo.trivia.domain.usecase.SaveQuizResultUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -22,20 +25,32 @@ class QuestionViewModel
     constructor(
         private val getQuestionsUseCase: GetQuestionsUseCase,
         private val saveQuizResultUseCase: SaveQuizResultUseCase,
+        private val aiManager: TriviaAiManager,
+        private val networkMonitor: NetworkMonitor,
     ) : BaseViewModel<QuestionUiState, QuestionIntent, QuestionUiEffect>(QuestionUiState()) {
         private var category: Category? = null
+
+        init {
+            viewModelScope.launch {
+                networkMonitor.isOnline.collectLatest { isOnline ->
+                    setState { copy(isOnline = isOnline) }
+                }
+            }
+        }
 
         override suspend fun handleIntent(intent: QuestionIntent) {
             when (intent) {
                 is QuestionIntent.LoadQuestions -> getQuestions(intent.amount, intent.category, intent.difficulty)
                 is QuestionIntent.SelectAnswer -> onAnswerSelected(intent.answerIndex)
                 is QuestionIntent.ResetQuizState -> resetState()
+                is QuestionIntent.GetAiHint -> getAiHint()
+                is QuestionIntent.GetAnswerExplanation -> getAnswerExplanation(intent.question, intent.answer)
             }
         }
 
         private fun resetState() {
             setState { 
-                QuestionUiState()
+                QuestionUiState(isOnline = currentState.isOnline)
             }
         }
 
@@ -74,6 +89,9 @@ class QuestionViewModel
             val updatedQuizResults = state.quizResults + result
             val updatedScore = if (isCorrect) state.score + 1 else state.score
 
+            // Clear previous AI info for the next question
+            setState { copy(hint = null, answerExplanation = null) }
+
             if (state.currentQuestionIndex < state.questions.size - 1) {
                 setState {
                     copy(
@@ -92,6 +110,29 @@ class QuestionViewModel
                 }
                 saveResultToDatabase(updatedScore, updatedQuizResults)
                 sendEffect { QuestionUiEffect.NavigateToResults(state.questions, updatedScore) }
+            }
+        }
+
+        private fun getAiHint() {
+            if (!currentState.isOnline) return
+
+            val state = currentState
+            val currentQuestion = state.questions.getOrNull(state.currentQuestionIndex) ?: return
+            
+            viewModelScope.launch {
+                setState { copy(isAiLoading = true) }
+                val hint = aiManager.generateHint(currentQuestion.question, currentQuestion.answers)
+                setState { copy(isAiLoading = false, hint = hint) }
+            }
+        }
+
+        private fun getAnswerExplanation(question: String, answer: String) {
+            if (!currentState.isOnline) return
+
+            viewModelScope.launch {
+                setState { copy(isAiLoading = true) }
+                val explanation = aiManager.generateExplanation(question, answer)
+                setState { copy(isAiLoading = false, answerExplanation = explanation) }
             }
         }
 
@@ -127,6 +168,10 @@ data class QuestionUiState(
     val quizResults: List<QuizResult> = emptyList(),
     val error: String? = null,
     val isFinished: Boolean = false,
+    val hint: String? = null,
+    val answerExplanation: String? = null,
+    val isAiLoading: Boolean = false,
+    val isOnline: Boolean = true,
 ) : UiState
 
 sealed class QuestionIntent : UiIntent {
@@ -135,6 +180,10 @@ sealed class QuestionIntent : UiIntent {
     data class SelectAnswer(val answerIndex: Int) : QuestionIntent()
 
     object ResetQuizState : QuestionIntent()
+
+    object GetAiHint : QuestionIntent()
+
+    data class GetAnswerExplanation(val question: String, val answer: String) : QuestionIntent()
 }
 
 sealed class QuestionUiEffect : UiEffect {

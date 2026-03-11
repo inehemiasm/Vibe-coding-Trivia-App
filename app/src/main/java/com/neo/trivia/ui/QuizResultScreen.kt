@@ -42,7 +42,6 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.neo.design.buttons.PrimaryButton
 import com.neo.trivia.R
-import com.neo.trivia.ui.Components.CollapsibleSection
 import com.neo.trivia.ui.Components.QuizResultCard
 import com.neo.trivia.ui.trivia.QuizResultIntent
 import com.neo.trivia.ui.trivia.QuizResultViewModel
@@ -165,6 +164,15 @@ fun QuizResultScreen(
                         selectedAnswerIndex = result.selectedAnswerIndex,
                         correctAnswerIndex = result.correctAnswerIndex,
                         isCorrect = result.isCorrect,
+                        explanationState = state.explanations[result.question.question],
+                        onExplainClick = {
+                            viewModel.onIntent(
+                                QuizResultIntent.GetExplanation(
+                                    result.question.question,
+                                    result.question.correctAnswer
+                                )
+                            )
+                        }
                     )
                 }
             }

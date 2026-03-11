@@ -15,6 +15,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -34,6 +35,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.neo.design.cards.AppCard
+import com.neo.trivia.data.preferences.SyncPreferencesManager
 import com.neo.trivia.data.preferences.ThemePreferencesManager
 import com.neo.trivia.ui.theme.ThemeMode
 import kotlinx.coroutines.launch
@@ -43,11 +45,14 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(navController: NavController) {
     val currentContext = androidx.compose.ui.platform.LocalContext.current
     val themePreferencesManager = ThemePreferencesManager(currentContext)
+    val syncPreferencesManager = SyncPreferencesManager(currentContext)
     val scope = rememberCoroutineScope()
 
     val themeData by themePreferencesManager.getThemePreferences().collectAsState(
         initial = com.neo.trivia.data.ThemePreferencesData(ThemeMode.Vibrant, false)
     )
+    
+    val isAutoSyncEnabled by syncPreferencesManager.isAutoSyncEnabled().collectAsState(initial = true)
 
     Scaffold(
         topBar = {
@@ -109,6 +114,26 @@ fun SettingsScreen(navController: NavController) {
             }
 
             item {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Sync & Data",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+
+            item {
+                AutoSyncToggle(
+                    enabled = isAutoSyncEnabled,
+                    onToggle = {
+                        scope.launch {
+                            syncPreferencesManager.setAutoSyncEnabled(!isAutoSyncEnabled)
+                        }
+                    }
+                )
+            }
+
+            item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
                     text = "About",
@@ -118,43 +143,94 @@ fun SettingsScreen(navController: NavController) {
             }
 
             item {
-                AppCard(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalPadding = 16.dp,
-                    verticalPadding = 16.dp,
-                ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Info,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary,
-                            )
-                            Text(
-                                text = "Trivia App",
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold,
-                            )
-                        }
-                        Text(
-                            text = "Version 1.0",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Text(
-                            text = "Built with Clean Architecture, Jetpack Compose, and Hilt",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
+                AboutCard()
+            }
+        }
+    }
+}
+
+@Composable
+fun AutoSyncToggle(
+    enabled: Boolean,
+    onToggle: () -> Unit
+) {
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalPadding = 16.dp,
+        verticalPadding = 16.dp,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                modifier = Modifier.weight(1f)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Sync,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Column {
+                    Text(
+                        text = "Auto-Sync Questions",
+                        style = MaterialTheme.typography.titleMedium,
+                    )
+                    Text(
+                        text = "Download new questions weekly in background",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
             }
+
+            Switch(
+                checked = enabled,
+                onCheckedChange = { onToggle() }
+            )
+        }
+    }
+}
+
+@Composable
+fun AboutCard() {
+    AppCard(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalPadding = 16.dp,
+        verticalPadding = 16.dp,
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Info,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                )
+                Text(
+                    text = "Trivia App",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
+            Text(
+                text = "Version 1.0",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = "Built with Clean Architecture, Jetpack Compose, and Hilt",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -175,14 +251,19 @@ fun ThemeSelectionCard(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
 
-        themes.forEach { theme ->
-            ThemeOptionChip(
-                text = theme,
-                selected = currentTheme == theme,
-                onClick = {
-                    onThemeSelect(theme)
-                },
-            )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            themes.forEach { theme ->
+                ThemeOptionChip(
+                    text = theme,
+                    selected = currentTheme == theme,
+                    onClick = {
+                        onThemeSelect(theme)
+                    },
+                )
+            }
         }
     }
 }

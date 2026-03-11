@@ -1,5 +1,6 @@
 package com.neo.trivia.data.repository
 
+import com.neo.trivia.core.NetworkMonitor
 import com.neo.trivia.data.local.LocalDataSource
 import com.neo.trivia.data.remote.RemoteDataSource
 import com.neo.trivia.domain.model.Category
@@ -19,12 +20,27 @@ class TriviaRepositoryImpl
     constructor(
         private val remoteDataSource: RemoteDataSource,
         private val localDataSource: LocalDataSource,
+        private val networkMonitor: NetworkMonitor,
     ) : TriviaRepository {
         override suspend fun getQuestions(
             amount: Int,
             category: Category?,
             difficulty: Difficulty,
         ): kotlin.Result<List<Question>> {
+            // If offline, bypass remote and go straight to local
+            if (!networkMonitor.isOnline.first()) {
+                if (category != null) {
+                    val offlineQuestions = localDataSource.getRandomQuestionsWithFallback(
+                        category = category.name,
+                        limit = amount
+                    )
+                    if (offlineQuestions.isNotEmpty()) {
+                        return kotlin.Result.success(offlineQuestions)
+                    }
+                }
+                return kotlin.Result.failure(Exception("Offline and no local data found"))
+            }
+
             return try {
                 when (val remoteResult = remoteDataSource.getQuestionsSync(amount, category, difficulty)) {
                     is com.neo.trivia.data.Result.Success -> {
@@ -65,6 +81,15 @@ class TriviaRepositoryImpl
         }
 
         override suspend fun getCategories(): kotlin.Result<List<Category>> {
+            if (!networkMonitor.isOnline.first()) {
+                val cached = localDataSource.getCachedCategories().first()
+                return if (cached.isNotEmpty()) {
+                    kotlin.Result.success(cached)
+                } else {
+                    kotlin.Result.failure(Exception("Offline and no cached categories"))
+                }
+            }
+
             return try {
                 when (val result = remoteDataSource.getCategories()) {
                     is com.neo.trivia.data.Result.Success -> {
@@ -162,6 +187,8 @@ class TriviaRepositoryImpl
         }
 
         override suspend fun syncQuestions(categories: List<Category>, targetAmountPerCategory: Int) {
+            if (!networkMonitor.isOnline.first()) return
+
             for (category in categories) {
                 val currentCount = localDataSource.getQuestionCountByCategory(category.name)
                 if (currentCount < targetAmountPerCategory) {
