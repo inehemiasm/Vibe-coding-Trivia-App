@@ -1,0 +1,6 @@
+# Project Rules
+
+- After every significant architectural change, feature addition, or dependency update, ensure that `CLAUDE.md` and `ARCHITECTURE.md` are updated to reflect the current state of the project.
+- Always follow the Clean Architecture and MVI patterns as documented in the project guides.
+- Maintain secure handling of sensitive keys by ensuring they are never hardcoded and are managed via `gradle.properties` or similar secure mechanisms.
+- Prioritize offline-first logic using the established `NetworkMonitor` and local caching strategies.
