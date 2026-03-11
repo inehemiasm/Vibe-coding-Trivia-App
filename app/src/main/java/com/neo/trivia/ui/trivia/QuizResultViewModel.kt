@@ -2,6 +2,7 @@ package com.neo.trivia.ui.trivia
 
 import androidx.lifecycle.viewModelScope
 import com.neo.trivia.core.BaseViewModel
+import com.neo.trivia.core.NetworkMonitor
 import com.neo.trivia.core.UiEffect
 import com.neo.trivia.core.UiIntent
 import com.neo.trivia.core.UiState
@@ -9,6 +10,7 @@ import com.neo.trivia.data.remote.TriviaAiManager
 import com.neo.trivia.domain.model.QuizResult
 import com.neo.trivia.domain.usecase.GetQuizResultsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -19,7 +21,17 @@ class QuizResultViewModel
     constructor(
         private val getQuizResultsUseCase: GetQuizResultsUseCase,
         private val aiManager: TriviaAiManager,
+        private val networkMonitor: NetworkMonitor,
     ) : BaseViewModel<QuizResultUiState, QuizResultIntent, QuizResultUiEffect>(QuizResultUiState()) {
+        
+        init {
+            viewModelScope.launch {
+                networkMonitor.isOnline.collectLatest { isOnline ->
+                    setState { copy(isOnline = isOnline) }
+                }
+            }
+        }
+
         override suspend fun handleIntent(intent: QuizResultIntent) {
             when (intent) {
                 is QuizResultIntent.LoadSavedResults -> loadSavedResults()
@@ -59,6 +71,8 @@ class QuizResultViewModel
         }
 
         private fun getExplanation(question: String, answer: String) {
+            if (!currentState.isOnline) return
+
             viewModelScope.launch {
                 setState { copy(explanations = explanations + (question to ExplanationState.Loading)) }
                 val explanation = aiManager.generateExplanation(question, answer)
@@ -76,7 +90,8 @@ data class QuizResultUiState(
     val quizResults: List<QuizResult> = emptyList(),
     val isLoading: Boolean = false,
     val error: String? = null,
-    val explanations: Map<String, ExplanationState> = emptyMap()
+    val explanations: Map<String, ExplanationState> = emptyMap(),
+    val isOnline: Boolean = true,
 ) : UiState
 
 sealed class ExplanationState {

@@ -42,6 +42,7 @@ class QuestionViewModel
             when (intent) {
                 is QuestionIntent.LoadQuestions -> getQuestions(intent.amount, intent.category, intent.difficulty)
                 is QuestionIntent.SelectAnswer -> onAnswerSelected(intent.answerIndex)
+                is QuestionIntent.SubmitAnswer -> onSubmitAnswer()
                 is QuestionIntent.ResetQuizState -> resetState()
                 is QuestionIntent.GetAiHint -> getAiHint()
                 is QuestionIntent.GetAnswerExplanation -> getAnswerExplanation(intent.question, intent.answer)
@@ -72,16 +73,21 @@ class QuestionViewModel
         }
 
         private fun onAnswerSelected(answerIndex: Int) {
+            setState { copy(selectedAnswerIndex = answerIndex) }
+        }
+
+        private fun onSubmitAnswer() {
             val state = currentState
+            val selectedIndex = state.selectedAnswerIndex ?: return
             if (state.questions.isEmpty() || state.isFinished) return
 
             val currentQuestion = state.questions[state.currentQuestionIndex]
-            val isCorrect = currentQuestion.correctAnswer == currentQuestion.answers[answerIndex]
+            val isCorrect = currentQuestion.correctAnswer == currentQuestion.answers[selectedIndex]
 
             val result =
                 QuizResult(
                     question = currentQuestion,
-                    selectedAnswerIndex = answerIndex,
+                    selectedAnswerIndex = selectedIndex,
                     correctAnswerIndex = currentQuestion.answers.indexOf(currentQuestion.correctAnswer),
                     isCorrect = isCorrect,
                 )
@@ -89,8 +95,8 @@ class QuestionViewModel
             val updatedQuizResults = state.quizResults + result
             val updatedScore = if (isCorrect) state.score + 1 else state.score
 
-            // Clear previous AI info for the next question
-            setState { copy(hint = null, answerExplanation = null) }
+            // Clear previous AI info and selection for the next question
+            setState { copy(hint = null, answerExplanation = null, selectedAnswerIndex = null) }
 
             if (state.currentQuestionIndex < state.questions.size - 1) {
                 setState {
@@ -172,12 +178,15 @@ data class QuestionUiState(
     val answerExplanation: String? = null,
     val isAiLoading: Boolean = false,
     val isOnline: Boolean = true,
+    val selectedAnswerIndex: Int? = null,
 ) : UiState
 
 sealed class QuestionIntent : UiIntent {
     data class LoadQuestions(val amount: Int, val category: Category?, val difficulty: Difficulty) : QuestionIntent()
 
     data class SelectAnswer(val answerIndex: Int) : QuestionIntent()
+    
+    object SubmitAnswer : QuestionIntent()
 
     object ResetQuizState : QuestionIntent()
 

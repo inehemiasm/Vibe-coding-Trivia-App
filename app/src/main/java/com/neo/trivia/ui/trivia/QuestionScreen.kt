@@ -1,6 +1,8 @@
 package com.neo.trivia.ui.trivia
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -23,6 +25,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Lightbulb
 import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Button
@@ -38,19 +41,21 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import com.neo.design.appbar.TriviaTopAppBar
+import com.neo.design.buttons.PrimaryButton
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.domain.model.Question
@@ -84,27 +89,30 @@ fun QuestionScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { 
-                    Text(
-                        category.name,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold
-                    ) 
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+            TriviaTopAppBar(
+                title = category.name,
+                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                onNavigationClick = { navController.popBackStack() }
             )
         },
+        bottomBar = {
+            if (!state.isLoading && state.error == null && state.questions.isNotEmpty()) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    tonalElevation = 8.dp,
+                    shadowElevation = 16.dp
+                ) {
+                    PrimaryButton(
+                        text = "Submit Answer",
+                        onClick = { viewModel.onIntent(QuestionIntent.SubmitAnswer) },
+                        enabled = state.selectedAnswerIndex != null,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    )
+                }
+            }
+        }
     ) { paddingValues ->
         Box(modifier = Modifier.padding(paddingValues).fillMaxSize()) {
             if (state.isLoading) {
@@ -193,8 +201,7 @@ fun QuestionScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // AI Hint Section (Moved below Question)
-                        // Only show if online
+                        // AI Hint Section
                         if (state.isOnline) {
                             AiHintSection(
                                 hint = state.hint,
@@ -212,6 +219,7 @@ fun QuestionScreen(
                             currentQuestion.answers.forEachIndexed { index, answer ->
                                 AnswerOption(
                                     text = answer,
+                                    isSelected = state.selectedAnswerIndex == index,
                                     onClick = {
                                         viewModel.onIntent(QuestionIntent.SelectAnswer(index))
                                     }
@@ -219,7 +227,6 @@ fun QuestionScreen(
                             }
                         }
                         
-                        // Extra spacer to ensure content isn't hidden by system bars
                         Spacer(modifier = Modifier.height(40.dp))
                     }
                 }
@@ -312,23 +319,61 @@ fun AiHintSection(
 @Composable
 fun AnswerOption(
     text: String,
+    isSelected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val containerColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+        label = "containerColor"
+    )
+    val contentColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
+        label = "contentColor"
+    )
+    val borderColor by animateColorAsState(
+        targetValue = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+        label = "borderColor"
+    )
+    val elevation by animateDpAsState(
+        targetValue = if (isSelected) 8.dp else 2.dp,
+        label = "elevation"
+    )
+
     Surface(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
-        color = MaterialTheme.colorScheme.surface,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
-        shadowElevation = 2.dp
+        color = containerColor,
+        border = BorderStroke(if (isSelected) 2.dp else 1.dp, borderColor),
+        shadowElevation = elevation
     ) {
-        Text(
-            text = text,
+        Row(
             modifier = Modifier.padding(16.dp),
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium,
-            textAlign = TextAlign.Center
-        )
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = text,
+                modifier = Modifier.weight(1f),
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                textAlign = TextAlign.Start,
+                color = contentColor
+            )
+            
+            AnimatedVisibility(
+                visible = isSelected,
+                enter = fadeIn() + expandVertically(),
+                exit = fadeOut() + shrinkVertically()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
     }
 }

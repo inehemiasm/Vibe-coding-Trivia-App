@@ -69,6 +69,7 @@ object Components {
         correctAnswerIndex: Int,
         isCorrect: Boolean,
         explanationState: ExplanationState? = null,
+        isOnline: Boolean = true,
         onExplainClick: () -> Unit = {},
         modifier: Modifier = Modifier,
     ) {
@@ -140,61 +141,63 @@ object Components {
                         }
                     }
 
-                    // AI Explanation Section
-                    Spacer(modifier = Modifier.height(4.dp))
-                    
-                    if (explanationState == null) {
-                        TextButton(
-                            onClick = onExplainClick,
-                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary),
-                            shape = RoundedCornerShape(8.dp)
-                        ) {
-                            Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("Explain why with AI", style = MaterialTheme.typography.labelLarge)
-                        }
-                    } else {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
-                                .padding(12.dp)
-                        ) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(
-                                    imageVector = Icons.Default.Info,
-                                    contentDescription = null,
-                                    tint = MaterialTheme.colorScheme.primary,
-                                    modifier = Modifier.size(16.dp)
-                                )
+                    // AI Explanation Section - Only show if online or if an explanation already exists
+                    if (isOnline || explanationState is ExplanationState.Success) {
+                        Spacer(modifier = Modifier.height(4.dp))
+                        
+                        if (explanationState == null) {
+                            TextButton(
+                                onClick = onExplainClick,
+                                colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.primary),
+                                shape = RoundedCornerShape(8.dp)
+                            ) {
+                                Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = "AI Explanation",
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
+                                Text("Explain why with AI", style = MaterialTheme.typography.labelLarge)
                             }
-                            Spacer(modifier = Modifier.height(8.dp))
-                            
-                            when (explanationState) {
-                                is ExplanationState.Loading -> {
-                                    CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                                }
-                                is ExplanationState.Success -> {
+                        } else {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                    .padding(12.dp)
+                            ) {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Icon(
+                                        imageVector = Icons.Default.Info,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(16.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = explanationState.text,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        text = "AI Explanation",
+                                        style = MaterialTheme.typography.labelMedium,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.primary
                                     )
                                 }
-                                is ExplanationState.Error -> {
-                                    Text(
-                                        text = "Couldn't load explanation.",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.error
-                                    )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                
+                                when (explanationState) {
+                                    is ExplanationState.Loading -> {
+                                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+                                    }
+                                    is ExplanationState.Success -> {
+                                        Text(
+                                            text = explanationState.text,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                    is ExplanationState.Error -> {
+                                        Text(
+                                            text = "Couldn't load explanation.",
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.error
+                                        )
+                                    }
                                 }
                             }
                         }

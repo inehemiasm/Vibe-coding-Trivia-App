@@ -25,7 +25,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,6 +39,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import com.neo.design.appbar.TriviaTopAppBar
 import com.neo.design.buttons.PrimaryButton
 import com.neo.trivia.R
 import com.neo.trivia.ui.Components.QuizResultCard
@@ -68,31 +68,17 @@ fun QuizResultScreen(
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = {
-                    Text(
-                        text = stringResource(if (quizResultId != null) R.string.quiz_details_title else R.string.quiz_results_top_bar_title),
-                        fontWeight = FontWeight.Bold
-                    )
-                },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
-                        )
-                    }
-                },
+            TriviaTopAppBar(
+                title = stringResource(if (quizResultId != null) R.string.quiz_details_title else R.string.quiz_results_top_bar_title),
+                navigationIcon = Icons.AutoMirrored.Filled.ArrowBack,
+                onNavigationClick = { navController.popBackStack() },
                 actions = {
                     if (state.quizResults.isNotEmpty()) {
                         IconButton(onClick = { /* TODO */ }) {
                             Icon(Icons.Default.Share, contentDescription = "Share")
                         }
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+                }
             )
         },
     ) { paddingValues ->
@@ -165,6 +151,7 @@ fun QuizResultScreen(
                         correctAnswerIndex = result.correctAnswerIndex,
                         isCorrect = result.isCorrect,
                         explanationState = state.explanations[result.question.question],
+                        isOnline = state.isOnline,
                         onExplainClick = {
                             viewModel.onIntent(
                                 QuizResultIntent.GetExplanation(
