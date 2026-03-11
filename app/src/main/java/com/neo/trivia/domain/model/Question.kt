@@ -10,4 +10,6 @@ data class Question(
     val correctAnswer: String,
     val category: String,
     val type: String,
+    val imageUrl: String? = null,
+    val imageKeyword: String? = null,
 )

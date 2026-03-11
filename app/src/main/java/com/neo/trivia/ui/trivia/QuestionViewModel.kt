@@ -6,6 +6,7 @@ import com.neo.trivia.core.NetworkMonitor
 import com.neo.trivia.core.UiEffect
 import com.neo.trivia.core.UiIntent
 import com.neo.trivia.core.UiState
+import com.neo.trivia.data.api.ApiConstants
 import com.neo.trivia.data.remote.TriviaAiManager
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
@@ -36,6 +37,12 @@ class QuestionViewModel
                     setState { copy(isOnline = isOnline) }
                 }
             }
+
+            viewModelScope.launch {
+                aiManager.isQuotaExceeded.collectLatest { isQuotaExceeded ->
+                    setState { copy(isAiQuotaExceeded = isQuotaExceeded) }
+                }
+            }
         }
 
         override suspend fun handleIntent(intent: QuestionIntent) {
@@ -51,7 +58,10 @@ class QuestionViewModel
 
         private fun resetState() {
             setState { 
-                QuestionUiState(isOnline = currentState.isOnline)
+                QuestionUiState(
+                    isOnline = currentState.isOnline,
+                    isAiQuotaExceeded = currentState.isAiQuotaExceeded
+                )
             }
         }
 
@@ -66,6 +76,7 @@ class QuestionViewModel
                 try {
                     val questions = getQuestionsUseCase(amount, category, difficulty).getOrThrow()
                     setState { copy(isLoading = false, questions = questions) }
+                    fetchImageForCurrentQuestion()
                 } catch (e: Exception) {
                     setState { copy(isLoading = false, error = e.message ?: "An error occurred") }
                 }
@@ -95,8 +106,7 @@ class QuestionViewModel
             val updatedQuizResults = state.quizResults + result
             val updatedScore = if (isCorrect) state.score + 1 else state.score
 
-            // Clear previous AI info and selection for the next question
-            setState { copy(hint = null, answerExplanation = null, selectedAnswerIndex = null) }
+            setState { copy(hint = null, answerExplanation = null, selectedAnswerIndex = null, currentImageUrl = null) }
 
             if (state.currentQuestionIndex < state.questions.size - 1) {
                 setState {
@@ -106,6 +116,7 @@ class QuestionViewModel
                         currentQuestionIndex = currentQuestionIndex + 1,
                     )
                 }
+                fetchImageForCurrentQuestion()
             } else {
                 setState {
                     copy(
@@ -119,8 +130,32 @@ class QuestionViewModel
             }
         }
 
+        private fun fetchImageForCurrentQuestion() {
+            if (!currentState.isOnline || currentState.isAiQuotaExceeded) {
+                Timber.d("fetchImageForCurrentQuestion: Skipping fetch (online: ${currentState.isOnline}, quotaExceeded: ${currentState.isAiQuotaExceeded})")
+                return
+            }
+            
+            val state = currentState
+            val question = state.questions.getOrNull(state.currentQuestionIndex) ?: return
+            
+            viewModelScope.launch {
+                Timber.d("fetchImageForCurrentQuestion: Requesting keyword for question: ${question.question}")
+                val keyword = aiManager.generateImageKeyword(question.question)
+                Timber.d("fetchImageForCurrentQuestion: Received keyword: $keyword")
+                
+                if (keyword != null) {
+                    val imageUrl = "${ApiConstants.LOREM_FLICKR_BASE_URL}${keyword.replace(" ", ",")}"
+                    Timber.d("fetchImageForCurrentQuestion: Generated image URL: $imageUrl")
+                    setState { copy(currentImageUrl = imageUrl) }
+                } else {
+                    Timber.w("fetchImageForCurrentQuestion: Keyword generation failed")
+                }
+            }
+        }
+
         private fun getAiHint() {
-            if (!currentState.isOnline) return
+            if (!currentState.isOnline || currentState.isAiQuotaExceeded) return
 
             val state = currentState
             val currentQuestion = state.questions.getOrNull(state.currentQuestionIndex) ?: return
@@ -133,7 +168,7 @@ class QuestionViewModel
         }
 
         private fun getAnswerExplanation(question: String, answer: String) {
-            if (!currentState.isOnline) return
+            if (!currentState.isOnline || currentState.isAiQuotaExceeded) return
 
             viewModelScope.launch {
                 setState { copy(isAiLoading = true) }
@@ -177,8 +212,10 @@ data class QuestionUiState(
     val hint: String? = null,
     val answerExplanation: String? = null,
     val isAiLoading: Boolean = false,
+    val isAiQuotaExceeded: Boolean = false,
     val isOnline: Boolean = true,
     val selectedAnswerIndex: Int? = null,
+    val currentImageUrl: String? = null,
 ) : UiState
 
 sealed class QuestionIntent : UiIntent {

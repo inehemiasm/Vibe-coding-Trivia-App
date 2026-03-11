@@ -47,13 +47,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
 import com.neo.design.appbar.TriviaTopAppBar
 import com.neo.design.buttons.PrimaryButton
 import com.neo.trivia.domain.model.Category
@@ -181,6 +183,31 @@ fun QuestionScreen(
 
                         Spacer(modifier = Modifier.height(24.dp))
 
+                        // AI Question Image
+                        AnimatedVisibility(
+                            visible = state.currentImageUrl != null && !state.isAiQuotaExceeded,
+                            enter = fadeIn() + expandVertically()
+                        ) {
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(200.dp),
+                                shape = RoundedCornerShape(24.dp),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+                            ) {
+                                AsyncImage(
+                                    model = state.currentImageUrl,
+                                    contentDescription = "Question related image",
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentScale = ContentScale.Crop
+                                )
+                            }
+                        }
+
+                        if (state.currentImageUrl != null && !state.isAiQuotaExceeded) {
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+
                         // Question Card
                         Card(
                             modifier = Modifier.fillMaxWidth(),
@@ -202,7 +229,7 @@ fun QuestionScreen(
                         Spacer(modifier = Modifier.height(16.dp))
 
                         // AI Hint Section
-                        if (state.isOnline) {
+                        if (state.isOnline && !state.isAiQuotaExceeded) {
                             AiHintSection(
                                 hint = state.hint,
                                 isLoading = state.isAiLoading,

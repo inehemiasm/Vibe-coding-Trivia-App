@@ -70,6 +70,7 @@ object Components {
         isCorrect: Boolean,
         explanationState: ExplanationState? = null,
         isOnline: Boolean = true,
+        isAiQuotaExceeded: Boolean = false,
         onExplainClick: () -> Unit = {},
         modifier: Modifier = Modifier,
     ) {
@@ -141,8 +142,8 @@ object Components {
                         }
                     }
 
-                    // AI Explanation Section - Only show if online or if an explanation already exists
-                    if (isOnline || explanationState is ExplanationState.Success) {
+                    // AI Explanation Section - Only show if online and quota not exceeded, or if an explanation already exists
+                    if ((isOnline && !isAiQuotaExceeded) || explanationState is ExplanationState.Success) {
                         Spacer(modifier = Modifier.height(4.dp))
                         
                         if (explanationState == null) {

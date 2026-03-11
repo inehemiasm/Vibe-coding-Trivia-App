@@ -152,6 +152,7 @@ fun QuizResultScreen(
                         isCorrect = result.isCorrect,
                         explanationState = state.explanations[result.question.question],
                         isOnline = state.isOnline,
+                        isAiQuotaExceeded = state.isAiQuotaExceeded,
                         onExplainClick = {
                             viewModel.onIntent(
                                 QuizResultIntent.GetExplanation(

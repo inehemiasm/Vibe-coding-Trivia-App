@@ -30,6 +30,12 @@ class QuizResultViewModel
                     setState { copy(isOnline = isOnline) }
                 }
             }
+
+            viewModelScope.launch {
+                aiManager.isQuotaExceeded.collectLatest { isQuotaExceeded ->
+                    setState { copy(isAiQuotaExceeded = isQuotaExceeded) }
+                }
+            }
         }
 
         override suspend fun handleIntent(intent: QuizResultIntent) {
@@ -71,7 +77,7 @@ class QuizResultViewModel
         }
 
         private fun getExplanation(question: String, answer: String) {
-            if (!currentState.isOnline) return
+            if (!currentState.isOnline || currentState.isAiQuotaExceeded) return
 
             viewModelScope.launch {
                 setState { copy(explanations = explanations + (question to ExplanationState.Loading)) }
@@ -92,6 +98,7 @@ data class QuizResultUiState(
     val error: String? = null,
     val explanations: Map<String, ExplanationState> = emptyMap(),
     val isOnline: Boolean = true,
+    val isAiQuotaExceeded: Boolean = false,
 ) : UiState
 
 sealed class ExplanationState {

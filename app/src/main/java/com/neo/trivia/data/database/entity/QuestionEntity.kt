@@ -13,6 +13,7 @@ import androidx.room.PrimaryKey
  * @property incorrectAnswers List of incorrect answer choices
  * @property category The category of the question
  * @property type The type of question (e.g., multiple choice)
+ * @property imageKeyword Optional AI-generated keyword for fetching related images
  * @property createdAt Timestamp when the question was cached
  */
 @Entity(tableName = "questions")
@@ -24,5 +25,6 @@ data class QuestionEntity(
     val incorrectAnswers: List<String>,
     val category: String,
     val type: String,
+    val imageKeyword: String? = null,
     val createdAt: Long = System.currentTimeMillis(),
 )
