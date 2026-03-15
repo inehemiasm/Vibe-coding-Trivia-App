@@ -5,10 +5,12 @@ import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.neo.trivia.data.database.dao.CategoryDao
 import com.neo.trivia.data.database.dao.FavoriteDao
+import com.neo.trivia.data.database.dao.TechHubPostDao
 import com.neo.trivia.data.database.dao.QuestionDao
 import com.neo.trivia.data.database.dao.QuizResultDao
 import com.neo.trivia.data.database.entity.CategoryEntity
 import com.neo.trivia.data.database.entity.FavoriteEntity
+import com.neo.trivia.data.database.entity.MediumPostEntity
 import com.neo.trivia.data.database.entity.QuestionEntity
 import com.neo.trivia.data.database.entity.QuizResultEntity
 
@@ -17,9 +19,10 @@ import com.neo.trivia.data.database.entity.QuizResultEntity
         QuestionEntity::class,
         FavoriteEntity::class,
         QuizResultEntity::class,
-        CategoryEntity::class
+        CategoryEntity::class,
+        MediumPostEntity::class
     ],
-    version = 5,
+    version = 8,
     exportSchema = false,
 )
 @TypeConverters(Converters::class)
@@ -31,4 +34,6 @@ abstract class TriviaDatabase : RoomDatabase() {
     abstract fun quizResultDao(): QuizResultDao
 
     abstract fun categoryDao(): CategoryDao
+
+    abstract fun mediumPostDao(): TechHubPostDao
 }

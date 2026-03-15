@@ -13,7 +13,6 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
@@ -29,17 +28,7 @@ object DataModule {
 
     @Provides
     @Singleton
-    fun provideTriviaApi(): TriviaApi {
-        val loggingInterceptor =
-            HttpLoggingInterceptor().apply {
-                level = HttpLoggingInterceptor.Level.BODY
-            }
-
-        val okHttpClient =
-            OkHttpClient.Builder()
-                .addInterceptor(loggingInterceptor)
-                .build()
-
+    fun provideTriviaApi(okHttpClient: OkHttpClient): TriviaApi {
         return Retrofit.Builder()
             .baseUrl(com.neo.trivia.data.api.ApiConstants.BASE_URL)
             .client(okHttpClient)

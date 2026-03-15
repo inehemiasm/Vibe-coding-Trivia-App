@@ -16,17 +16,11 @@ interface TriviaRepository {
 
     suspend fun getCategories(): kotlin.Result<List<Category>>
 
-    fun getQuestionsFromCache(): Flow<List<Question>>
-
-    fun searchQuestions(query: String): Flow<List<Question>>
-
     suspend fun clearCache()
 
     suspend fun toggleFavorite(question: Question): Boolean
 
     fun getFavoriteQuestions(): Flow<List<Question>>
-
-    fun getAllQuestions(): Flow<List<Question>>
 
     suspend fun save(
         category: Category,

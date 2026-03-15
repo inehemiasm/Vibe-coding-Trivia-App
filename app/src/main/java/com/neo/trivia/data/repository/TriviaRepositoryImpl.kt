@@ -119,14 +119,6 @@ class TriviaRepositoryImpl
             }
         }
 
-        override fun getQuestionsFromCache(): Flow<List<Question>> {
-            return localDataSource.getAllQuestions()
-        }
-
-        override fun searchQuestions(query: String): Flow<List<Question>> {
-            return localDataSource.searchQuestions(query)
-        }
-
         override suspend fun clearCache() {
             localDataSource.clearCache()
         }
@@ -137,10 +129,6 @@ class TriviaRepositoryImpl
 
         override fun getFavoriteQuestions(): Flow<List<Question>> {
             return localDataSource.getFavoriteQuestions()
-        }
-
-        override fun getAllQuestions(): Flow<List<Question>> {
-            return localDataSource.getAllQuestions()
         }
 
         override suspend fun save(

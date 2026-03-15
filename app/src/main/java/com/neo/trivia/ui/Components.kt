@@ -1,6 +1,5 @@
 package com.neo.trivia.ui
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -41,8 +40,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.neo.trivia.R
 import com.neo.trivia.domain.model.Question
 import com.neo.trivia.ui.trivia.ExplanationState
 
@@ -123,8 +124,8 @@ object Components {
                     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         // Your answer
                         ResultAnswerRow(
-                            label = "Your Answer",
-                            answer = selectedAnswerIndex?.let { allAnswers.getOrNull(it) } ?: "Skipped",
+                            label = stringResource(R.string.your_answer),
+                            answer = selectedAnswerIndex?.let { allAnswers.getOrNull(it) } ?: stringResource(R.string.not_selected),
                             color = statusColor,
                             backgroundColor = containerColor,
                             icon = if (isCorrect) Icons.Default.Check else Icons.Default.Close
@@ -133,7 +134,7 @@ object Components {
                         // Correct answer if wrong
                         if (!isCorrect) {
                             ResultAnswerRow(
-                                label = "Correct Answer",
+                                label = stringResource(R.string.correct_answer),
                                 answer = question.correctAnswer,
                                 color = Color(0xFF2E7D32),
                                 backgroundColor = Color(0xFFE8F5E9),
@@ -154,7 +155,7 @@ object Components {
                             ) {
                                 Icon(Icons.Default.AutoAwesome, contentDescription = null, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Explain why with AI", style = MaterialTheme.typography.labelLarge)
+                                Text(stringResource(R.string.explain_with_ai), style = MaterialTheme.typography.labelLarge)
                             }
                         } else {
                             Column(
@@ -173,7 +174,7 @@ object Components {
                                     )
                                     Spacer(modifier = Modifier.width(8.dp))
                                     Text(
-                                        text = "AI Explanation",
+                                        text = stringResource(R.string.ai_explanation),
                                         style = MaterialTheme.typography.labelMedium,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
@@ -194,7 +195,7 @@ object Components {
                                     }
                                     is ExplanationState.Error -> {
                                         Text(
-                                            text = "Couldn't load explanation.",
+                                            text = stringResource(R.string.explanation_error),
                                             style = MaterialTheme.typography.bodySmall,
                                             color = MaterialTheme.colorScheme.error
                                         )
@@ -275,7 +276,7 @@ object Components {
                 Spacer(modifier = Modifier.weight(1f))
                 Icon(
                     imageVector = if (isExpanded) Icons.Default.ArrowDropDown else Icons.Default.ArrowDropDown,
-                    contentDescription = if (isExpanded) "Collapse" else "Expand",
+                    contentDescription = null,
                     tint = titleColor,
                 )
             }

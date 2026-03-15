@@ -23,9 +23,12 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
-        // Expose the API key from gradle.properties (local or global)
+        // Expose the API keys from gradle.properties
         val geminiApiKey = project.findProperty("GEMINI_API_KEY") as? String ?: ""
         buildConfigField("String", "GEMINI_API_KEY", "\"$geminiApiKey\"")
+
+        val quizApiKey = project.findProperty("QUIZ_API_KEY") as? String ?: ""
+        buildConfigField("String", "QUIZ_API_KEY", "\"$quizApiKey\"")
     }
 
     buildTypes {

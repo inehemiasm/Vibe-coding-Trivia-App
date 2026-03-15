@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -25,7 +24,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -75,7 +73,7 @@ fun QuizResultScreen(
                 actions = {
                     if (state.quizResults.isNotEmpty()) {
                         IconButton(onClick = { /* TODO */ }) {
-                            Icon(Icons.Default.Share, contentDescription = "Share")
+                            Icon(Icons.Default.Share, contentDescription = stringResource(R.string.share_results))
                         }
                     }
                 }
@@ -116,7 +114,7 @@ fun QuizResultScreen(
                             }
 
                             PrimaryButton(
-                                text = "Home",
+                                text = stringResource(R.string.nav_home),
                                 onClick = { 
                                     viewModel.onIntent(QuizResultIntent.ResetQuiz)
                                     navController.popBackStack() 
@@ -174,7 +172,7 @@ fun QuizResultScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp),
                 ) {
                     Text(
-                        text = if (quizResultId != null) "Loading result details..." else stringResource(R.string.no_quiz_results),
+                        text = if (quizResultId != null) stringResource(R.string.quiz_loading_details) else stringResource(R.string.no_quiz_results),
                         style = MaterialTheme.typography.bodyLarge,
                     )
                     if (quizResultId == null) {
@@ -230,7 +228,7 @@ fun ScoreCard(
             )
 
             Text(
-                text = "$score / $totalQuestions",
+                text = stringResource(R.string.quiz_score_summary_format, score, totalQuestions),
                 style = MaterialTheme.typography.displayMedium,
                 fontWeight = FontWeight.Black,
                 color = MaterialTheme.colorScheme.onPrimaryContainer
@@ -263,21 +261,21 @@ fun StatsSummary(
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         StatBox(
-            label = "Total",
+            label = stringResource(R.string.stat_total_label),
             value = totalQuestions.toString(),
             containerColor = MaterialTheme.colorScheme.surfaceVariant,
             contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.weight(1f)
         )
         StatBox(
-            label = "Correct",
+            label = stringResource(R.string.stat_correct_label),
             value = correctAnswers.toString(),
             containerColor = Color(0xFFE8F5E9),
             contentColor = Color(0xFF2E7D32),
             modifier = Modifier.weight(1f)
         )
         StatBox(
-            label = "Wrong",
+            label = stringResource(R.string.stat_wrong_label),
             value = incorrectAnswers.toString(),
             containerColor = Color(0xFFFFEBEE),
             contentColor = Color(0xFFC62828),

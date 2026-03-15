@@ -41,14 +41,13 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -58,6 +57,7 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.neo.design.appbar.TriviaTopAppBar
 import com.neo.design.buttons.PrimaryButton
+import com.neo.trivia.R
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.domain.model.Question
@@ -105,7 +105,7 @@ fun QuestionScreen(
                     shadowElevation = 16.dp
                 ) {
                     PrimaryButton(
-                        text = "Submit Answer",
+                        text = stringResource(R.string.quiz_submit_answer),
                         onClick = { viewModel.onIntent(QuestionIntent.SubmitAnswer) },
                         enabled = state.selectedAnswerIndex != null,
                         modifier = Modifier
@@ -125,7 +125,7 @@ fun QuestionScreen(
                 ) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Text("Getting your questions...", style = MaterialTheme.typography.bodyMedium)
+                    Text(stringResource(R.string.quiz_loading_questions), style = MaterialTheme.typography.bodyMedium)
                 }
             } else if (state.error != null) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -151,7 +151,7 @@ fun QuestionScreen(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
                                 Text(
-                                    text = "Question ${state.currentQuestionIndex + 1} of ${questions.size}",
+                                    text = stringResource(R.string.quiz_question_number, state.currentQuestionIndex + 1, questions.size),
                                     style = MaterialTheme.typography.labelLarge,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -164,7 +164,7 @@ fun QuestionScreen(
                                     )
                                     Spacer(modifier = Modifier.width(4.dp))
                                     Text(
-                                        text = "Score: ${state.score}",
+                                        text = stringResource(R.string.quiz_score_format, state.score),
                                         style = MaterialTheme.typography.labelLarge,
                                         fontWeight = FontWeight.Bold,
                                         color = MaterialTheme.colorScheme.primary
@@ -197,7 +197,7 @@ fun QuestionScreen(
                             ) {
                                 AsyncImage(
                                     model = state.currentImageUrl,
-                                    contentDescription = "Question related image",
+                                    contentDescription = stringResource(R.string.quiz_image_desc),
                                     modifier = Modifier.fillMaxSize(),
                                     contentScale = ContentScale.Crop
                                 )
@@ -301,7 +301,7 @@ fun AiHintSection(
                 }
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-                    text = if (isLoading) "Thinking..." else "Get AI Hint", 
+                    text = if (isLoading) stringResource(R.string.quiz_thinking) else stringResource(R.string.quiz_get_ai_hint),
                     style = MaterialTheme.typography.labelLarge
                 )
             }

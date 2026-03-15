@@ -37,6 +37,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -44,6 +45,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.neo.design.buttons.PrimaryButton
 import com.neo.design.cards.CategoryCard
+import com.neo.trivia.R
 import com.neo.trivia.domain.model.Category
 import com.neo.trivia.domain.model.Difficulty
 import com.neo.trivia.ui.QuestionScreen
@@ -79,7 +81,7 @@ fun CategorySelectionScreen(
                     .padding(16.dp),
         ) {
             Text(
-                text = "Choose a Category",
+                text = stringResource(R.string.trivia_select_category),
                 style = MaterialTheme.typography.headlineLarge,
                 color = MaterialTheme.colorScheme.primary,
                 fontWeight = FontWeight.Bold
@@ -102,7 +104,7 @@ fun CategorySelectionScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = "Select Difficulty",
+                text = stringResource(R.string.trivia_select_difficulty),
                 style = MaterialTheme.typography.headlineSmall,
                 color = MaterialTheme.colorScheme.onSurface,
                 fontWeight = FontWeight.SemiBold
@@ -145,7 +147,7 @@ fun CategorySelectionScreen(
             Spacer(modifier = Modifier.height(32.dp))
 
             PrimaryButton(
-                text = "Start Quiz",
+                text = stringResource(R.string.trivia_start_quiz),
                 onClick = {
                     selectedCategory?.let { category ->
                         selectedDifficulty?.let { difficulty ->

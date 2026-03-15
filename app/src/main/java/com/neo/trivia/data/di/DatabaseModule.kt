@@ -34,4 +34,12 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideQuizResultDao(database: TriviaDatabase) = database.quizResultDao()
+
+    @Provides
+    @Singleton
+    fun provideCategoryDao(database: TriviaDatabase) = database.categoryDao()
+
+    @Provides
+    @Singleton
+    fun provideMediumPostDao(database: TriviaDatabase) = database.mediumPostDao()
 }

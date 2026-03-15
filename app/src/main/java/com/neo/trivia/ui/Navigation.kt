@@ -3,8 +3,8 @@ package com.neo.trivia.ui
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Hub
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Icon
@@ -17,7 +17,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.compose.ui.res.stringResource
+import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
@@ -27,8 +28,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.neo.trivia.R
 import com.neo.trivia.domain.model.Difficulty
-import com.neo.trivia.ui.favorites.FavoritesScreen
+import com.neo.trivia.ui.common.WebViewScreen
+import com.neo.trivia.ui.favorites.DevHubScreen
+import com.neo.trivia.ui.favorites.MediumPostDetailScreen
 import com.neo.trivia.ui.settings.SettingsScreen
 import com.neo.trivia.ui.stats.StatisticsScreen
 import com.neo.trivia.ui.trivia.CategorySelectionScreen
@@ -45,31 +49,37 @@ data class QuestionScreen(val categoryId: Int, val difficulty: String)
 object QuizResultScreen
 
 @Serializable
+data class MediumPostDetailScreen(val postId: String)
+
+@Serializable
+data class WebViewScreen(val url: String, val title: String)
+
+@Serializable
 sealed class Screen(
     val route: String,
-    val title: String,
+    val titleRes: Int,
 ) {
     @Serializable
-    data object Home : Screen("home", "Home")
+    data object Home : Screen("home", R.string.nav_home)
 
     @Serializable
-    data object Favorites : Screen("favorites", "Favorites")
+    data object DevHub : Screen("dev_hub", R.string.nav_dev_hub)
 
     @Serializable
-    data object Stats : Screen("stats", "Stats")
+    data object Stats : Screen("stats", R.string.nav_stats)
 
     @Serializable
-    data object Settings : Screen("settings", "Settings")
+    data object Settings : Screen("settings", R.string.nav_settings)
 
     @Serializable
-    data class QuizResultDetailScreen(val quizResultId: String) : Screen("quiz_result_detail", "Quiz Result Detail")
+    data class QuizResultDetailScreen(val quizResultId: String) : Screen("quiz_result_detail", R.string.quiz_results_top_bar_title)
 }
 
 val Screen.icon: ImageVector
     get() =
         when (this) {
             Screen.Home -> Icons.Default.Home
-            Screen.Favorites -> Icons.Default.Favorite
+            Screen.DevHub -> Icons.Default.Hub
             Screen.Stats -> Icons.Default.Star
             Screen.Settings -> Icons.Default.Settings
             else -> Icons.Default.Home
@@ -78,7 +88,7 @@ val Screen.icon: ImageVector
 val items =
     listOf(
         Screen.Home,
-        Screen.Favorites,
+        Screen.DevHub,
         Screen.Stats,
         Screen.Settings,
     )
@@ -94,7 +104,7 @@ fun NavigationApp(navController: NavHostController = rememberNavController()) {
                 items.forEach { screen ->
                     NavigationBarItem(
                         icon = { Icon(screen.icon, contentDescription = null) },
-                        label = { Text(screen.title) },
+                        label = { Text(stringResource(screen.titleRes)) },
                         selected = currentDestination?.hierarchy?.any { it.route == screen::class.qualifiedName } == true,
                         onClick = {
                             Timber.d("Navigating to ${screen::class.simpleName}")
@@ -163,9 +173,28 @@ fun NavigationApp(navController: NavHostController = rememberNavController()) {
                     navController = navController,
                 )
             }
-            composable<Screen.Favorites> {
-                FavoritesScreen(navController = navController)
+
+            composable<Screen.DevHub> {
+                DevHubScreen(navController = navController)
             }
+
+            composable<MediumPostDetailScreen> { backStackEntry ->
+                val detail: MediumPostDetailScreen = backStackEntry.toRoute()
+                MediumPostDetailScreen(
+                    postId = detail.postId,
+                    navController = navController
+                )
+            }
+
+            composable<WebViewScreen> { backStackEntry ->
+                val webView: WebViewScreen = backStackEntry.toRoute()
+                WebViewScreen(
+                    url = webView.url,
+                    title = webView.title,
+                    navController = navController
+                )
+            }
+
             composable<Screen.Stats> {
                 StatisticsScreen(navController = navController)
             }

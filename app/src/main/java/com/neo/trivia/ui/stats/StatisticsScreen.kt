@@ -26,12 +26,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.neo.design.cards.AppCard
+import com.neo.trivia.R
 import com.neo.trivia.ui.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,12 +47,12 @@ fun StatisticsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Statistics") },
+                title = { Text(stringResource(R.string.stats_top_bar_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.nav_back),
                         )
                     }
                 },
@@ -75,14 +77,14 @@ fun StatisticsScreen(
                     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
                         StatCard(
                             icon = Icons.Default.Info,
-                            title = "Total Questions",
+                            title = stringResource(R.string.stat_total_questions),
                             value = "${state.totalQuestions}",
                             color = MaterialTheme.colorScheme.primary,
                         )
 
                         StatCard(
                             icon = Icons.Default.Favorite,
-                            title = "Favorite Questions",
+                            title = stringResource(R.string.stat_favorite_questions),
                             value = "${state.totalQuestions}",
                             color = MaterialTheme.colorScheme.error,
                         )
@@ -91,7 +93,7 @@ fun StatisticsScreen(
 
                 item {
                     Text(
-                        text = "Recent Quiz Results",
+                        text = stringResource(R.string.stats_recent_results),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold,
                         modifier =
@@ -111,12 +113,12 @@ fun StatisticsScreen(
                                 verticalArrangement = Arrangement.spacedBy(8.dp),
                             ) {
                                 Text(
-                                    text = "No results yet",
+                                    text = stringResource(R.string.stats_no_results),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold,
                                 )
                                 Text(
-                                    text = "Quiz results will appear here after you complete a quiz.",
+                                    text = stringResource(R.string.stats_no_results_desc),
                                     style = MaterialTheme.typography.bodyMedium,
                                 )
                             }
@@ -142,20 +144,20 @@ fun StatisticsScreen(
                             verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text(
-                                text = "Statistics Information",
+                                text = stringResource(R.string.stats_info_header),
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                             )
                             Text(
-                                text = "Total Questions: ${state.totalQuestions}",
+                                text = stringResource(R.string.stats_total_questions_info, state.totalQuestions),
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                             Text(
-                                text = "Questions are cached locally for offline access.",
+                                text = stringResource(R.string.stats_caching_info),
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                             Text(
-                                text = "You can clear your history at any time.",
+                                text = stringResource(R.string.stats_history_info),
                                 style = MaterialTheme.typography.bodyMedium,
                             )
                         }

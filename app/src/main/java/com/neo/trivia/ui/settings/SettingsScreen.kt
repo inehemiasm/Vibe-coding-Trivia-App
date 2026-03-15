@@ -31,10 +31,12 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.neo.design.cards.AppCard
+import com.neo.trivia.R
 import com.neo.trivia.data.preferences.SyncPreferencesManager
 import com.neo.trivia.data.preferences.ThemePreferencesManager
 import com.neo.trivia.ui.theme.ThemeMode
@@ -57,12 +59,12 @@ fun SettingsScreen(navController: NavController) {
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Settings") },
+                title = { Text(stringResource(R.string.settings_top_bar_title)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Back",
+                            contentDescription = stringResource(R.string.nav_back),
                         )
                     }
                 },
@@ -79,7 +81,7 @@ fun SettingsScreen(navController: NavController) {
         ) {
             item {
                 Text(
-                    text = "Appearance",
+                    text = stringResource(R.string.settings_appearance_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -116,7 +118,7 @@ fun SettingsScreen(navController: NavController) {
             item {
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = "Sync & Data",
+                    text = stringResource(R.string.settings_sync_data_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -136,7 +138,7 @@ fun SettingsScreen(navController: NavController) {
             item {
                 Spacer(modifier = Modifier.height(24.dp))
                 Text(
-                    text = "About",
+                    text = stringResource(R.string.settings_about_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
@@ -176,11 +178,11 @@ fun AutoSyncToggle(
                 )
                 Column {
                     Text(
-                        text = "Auto-Sync Questions",
+                        text = stringResource(R.string.settings_auto_sync_title),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        text = "Download new questions weekly in background",
+                        text = stringResource(R.string.settings_auto_sync_description),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -216,18 +218,18 @@ fun AboutCard() {
                     tint = MaterialTheme.colorScheme.primary,
                 )
                 Text(
-                    text = "Trivia App",
+                    text = stringResource(R.string.about_app_title),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                 )
             }
             Text(
-                text = "Version 1.0",
+                text = stringResource(R.string.app_version),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = "Built with Clean Architecture, Jetpack Compose, and Hilt",
+                text = stringResource(R.string.app_info_text),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -246,7 +248,7 @@ fun ThemeSelectionCard(
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         Text(
-            text = "Select Theme",
+            text = stringResource(R.string.select_theme),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -319,11 +321,11 @@ fun DarkModeToggle(
                 )
                 Column {
                     Text(
-                        text = "Dark Mode",
+                        text = stringResource(R.string.dark_mode_title),
                         style = MaterialTheme.typography.titleMedium,
                     )
                     Text(
-                        text = if (isDarkMode) "Currently enabled" else "Enable dark theme",
+                        text = if (isDarkMode) stringResource(R.string.dark_mode_enabled) else stringResource(R.string.dark_mode_disabled),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

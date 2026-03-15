@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import com.neo.trivia.data.ThemePreferencesData
 import com.neo.trivia.data.preferences.SyncPreferencesManager
 import com.neo.trivia.data.preferences.ThemePreferencesManager
 import com.neo.trivia.data.remote.SyncScheduler
@@ -14,7 +15,6 @@ import com.neo.trivia.ui.NavigationApp
 import com.neo.trivia.ui.theme.ThemeMode
 import com.neo.trivia.ui.theme.TriviaAppTheme
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.flow.collectLatest
 import javax.inject.Inject
 
 @AndroidEntryPoint
@@ -33,7 +33,7 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val themeData by themePreferencesManager.getThemePreferences().collectAsState(
-                initial = com.neo.trivia.data.ThemePreferencesData(ThemeMode.Vibrant, false)
+                initial = ThemePreferencesData(ThemeMode.Vibrant, false)
             )
 
             val isAutoSyncEnabled by syncPreferencesManager.isAutoSyncEnabled().collectAsState(initial = true)

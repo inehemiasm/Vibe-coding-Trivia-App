@@ -13,8 +13,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.neo.trivia.R
 import com.neo.trivia.domain.model.QuizHistory
 
 @Composable
@@ -47,7 +49,7 @@ fun QuizHistoryItem(
                     fontWeight = FontWeight.Bold,
                 )
                 Text(
-                    text = "${quizHistory.score}/${quizHistory.totalQuestions}",
+                    text = stringResource(R.string.quiz_score_summary_format, quizHistory.score, quizHistory.totalQuestions),
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
                     color =
@@ -62,13 +64,13 @@ fun QuizHistoryItem(
             }
 
             Text(
-                text = "Accuracy: ${"%.1f".format(quizHistory.accuracy)}%",
+                text = stringResource(R.string.stats_accuracy_format, quizHistory.accuracy),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
             Text(
-                text = "Date: ${quizHistory.quizDate}",
+                text = stringResource(R.string.stats_date_format, quizHistory.quizDate),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
