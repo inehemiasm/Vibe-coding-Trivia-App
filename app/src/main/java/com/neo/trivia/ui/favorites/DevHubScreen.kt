@@ -62,18 +62,13 @@ fun DevHubScreen(
         ) {
             TabRow(selectedTabIndex = state.selectedTab) {
                 Tab(
-                    selected = state.selectedTab == 0,
-                    onClick = { viewModel.onIntent(DevHubIntent.SwitchTab(0)) },
-                    text = { Text(stringResource(R.string.favorites_questions_tab)) }
-                )
-                Tab(
                     selected = state.selectedTab == 1,
-                    onClick = { viewModel.onIntent(DevHubIntent.SwitchTab(1)) },
+                    onClick = { viewModel.onIntent(DevHubIntent.SwitchTab(0)) },
                     text = { Text(stringResource(R.string.favorites_saved_tab)) }
                 )
                 Tab(
                     selected = state.selectedTab == 2,
-                    onClick = { viewModel.onIntent(DevHubIntent.SwitchTab(2)) },
+                    onClick = { viewModel.onIntent(DevHubIntent.SwitchTab(1)) },
                     text = { Text(stringResource(R.string.favorites_discover_tab)) }
                 )
             }
@@ -84,11 +79,7 @@ fun DevHubScreen(
                     .padding(16.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                val searchLabel = if (state.selectedTab == 0) {
-                    stringResource(R.string.favorites_search_questions)
-                } else {
-                    stringResource(R.string.favorites_search_posts)
-                }
+                val searchLabel =  stringResource(R.string.favorites_search_posts)
                 
                 OutlinedTextField(
                     value = searchQuery,
@@ -109,13 +100,12 @@ fun DevHubScreen(
                     }
                 } else {
                     when (state.selectedTab) {
-                        0 -> QuestionsList(state.questions.filter { it.question.contains(searchQuery, ignoreCase = true) }, viewModel)
-                        1 -> SavedPostsList(
+                        0 -> SavedPostsList(
                             state.savedPosts.filter { it.title.contains(searchQuery, ignoreCase = true) }, 
                             viewModel,
                             onPostClick = { navController.navigate(MediumPostDetailScreen(it.id)) }
                         )
-                        2 -> DiscoverTab(state, viewModel, searchQuery, onPostClick = { navController.navigate(MediumPostDetailScreen(it.id)) })
+                        1 -> DiscoverTab(state, viewModel, searchQuery, onPostClick = { navController.navigate(MediumPostDetailScreen(it.id)) })
                     }
                 }
             }
@@ -135,7 +125,7 @@ fun DiscoverTab(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.fillMaxWidth()
         ) {
-            items(DiscoverySource.values()) { source ->
+            items(DiscoverySource.entries.toTypedArray()) { source ->
                 FilterChip(
                     selected = state.selectedSource == source,
                     onClick = { viewModel.onIntent(DevHubIntent.SwitchDiscoverySource(source)) },
